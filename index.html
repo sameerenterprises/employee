@@ -18,6 +18,9 @@
         }
         .container {
             padding: 20px;
+            display: flex;
+            flex-direction: column; /* Stack items vertically */
+            align-items: center; /* Center items horizontally */
         }
         h1 {
             font-size: 28px;
@@ -27,12 +30,14 @@
         .button {
             font-size: 18px;
             padding: 10px 20px;
-            margin: 10px;
+            margin: 10px 0; /* Vertical margin to separate buttons */
             cursor: pointer;
             color: white;
             background-color: #0066cc;
             border: none;
             border-radius: 5px;
+            width: 200px; /* Fixed width for consistent button size */
+            text-align: center;
         }
         .button:hover {
             background-color: #005bb5;
@@ -90,6 +95,7 @@
             .button {
                 font-size: 16px;
                 padding: 8px 16px;
+                width: 150px; /* Adjust width for smaller screens */
             }
             .content h1 {
                 font-size: 20px;
@@ -107,63 +113,49 @@
 <body>
     <div id="welcome" class="container">
         <h1>Welcome to Sameer Enterprises</h1>
-        <p>Please select your preferred language:</p>
-        <button class="button" onclick="showContent('english')">English</button>
-        <button class="button" onclick="showContent('hindi')">हिंदी</button>
+        <p>Please select an option:</p>
+        <button class="button" onclick="showContent('contacts')">Contacts</button>
+        <a href="https://g.page/r/CcPL1YPMjylGEBM/review" target="_blank">
+            <button class="button">Review Us</button>
+        </a>
     </div>
 
     <div id="content" class="hidden container">
-        <div id="english" class="content hidden">
+        <div id="contacts" class="content hidden">
+            <h1>Company Details:</h1>
+            <p>Email: <a href="mailto:salarindiacorp@gmail.com">salarindiacorp@gmail.com</a></p>
+            <p>Number: <a href="tel:7045692083">7045692083</a></p>
+            
             <h1>Bill Price Enquiry & GST Order Placement:</h1>
             <p>Name: Lateef Choudhary</p>
             <p>Number: <a href="tel:9930306247">9930306247</a></p>
+            
             <h1>Account / Invoice / MTC Related Queries:</h1>
             <p>Name: Neha Singh</p>
             <p>Number: <a href="tel:8169248105">8169248105</a></p>
-            <h1>Delivery Related Queries:</h1>
+            
+            <h1>Retail Price Enquiry & Retail Order Placement:</h1>
             <p>Name: Ram Jais</p>
             <p>Number: <a href="tel:9022405221">9022405221</a></p>
-            <h1>Collection Related Queries:</h1>
-            <p>Name: Sangaram Ingle</p>
+            
+            <p>Name: Sangram Ingale</p>
             <p>Number: <a href="tel:9833148813">9833148813</a></p>
-            <h1>Retail Price Enquiry & Retail Order Placement:</h1>
-            <p>Name: Sameer Choudhary</p>
-            <p>Number: <a href="tel:8104189892">8104189892</a></p>
-            <button class="button back-button" onclick="showWelcome()">Back</button>
-        </div>
-
-        <div id="hindi" class="content hidden">
-            <h1>बिल मूल्य पूछताछ और जीएसटी आदेश की प्रक्रिया:</h1>
-            <p>नाम: लतीफ चौधरी</p>
-            <p>नंबर: <a href="tel:9930306247">9930306247</a></p>
-            <h1>खाता / चालान / एमटीसी संबंधित पूछताछ:</h1>
-            <p>नाम: नेहा सिंह</p>
-            <p>नंबर: <a href="tel:8169248105">8169248105</a></p>
-            <h1>डिलीवरी संबंधित पूछताछ:</h1>
-            <p>नाम: राम जैस</p>
-            <p>नंबर: <a href="tel:9022405221">9022405221</a></p>
-            <h1>संग्रह संबंधित पूछताछ:</h1>
-            <p>नाम: संग्राम इंगल</p>
-            <p>नंबर: <a href="tel:9833148813">9833148813</a></p>
-            <h1>रिटेल मूल्य पूछताछ और रिटेल आदेश की प्रक्रिया:</h1>
-            <p>नाम: समीर चौधरी</p>
-            <p>नंबर: <a href="tel:8104189892">8104189892</a></p>
+            
             <button class="button back-button" onclick="showWelcome()">Back</button>
         </div>
     </div>
 
     <script>
-        function showContent(language) {
+        function showContent(section) {
             document.getElementById('welcome').classList.add('hidden');
             document.getElementById('content').classList.remove('hidden');
-            document.getElementById('english').classList.add('hidden');
-            document.getElementById('hindi').classList.add('hidden');
-            document.getElementById(language).classList.remove('hidden');
+            document.getElementById('contacts').classList.remove('hidden');
         }
 
         function showWelcome() {
             document.getElementById('welcome').classList.remove('hidden');
             document.getElementById('content').classList.add('hidden');
+            document.getElementById('contacts').classList.add('hidden');
         }
     </script>
 </body>
