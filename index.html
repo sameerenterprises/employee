@@ -14,7 +14,6 @@
             justify-content: center;
             align-items: center;
             height: 100vh; /* Full viewport height */
-            text-align: center;
         }
         .container {
             padding: 20px;
@@ -46,7 +45,6 @@
             display: none;
         }
         .content {
-            text-align: left;
             padding: 20px;
             background-color: #fff;
             margin: 20px auto;
@@ -67,12 +65,22 @@
             color: #555;
             margin: 5px 0;
         }
-        .content a {
-            color: #0066cc;
+        .button-link {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 10px 0; /* Vertical margin to separate buttons */
+            cursor: pointer;
+            color: white;
+            background-color: #0066cc;
+            border: none;
+            border-radius: 5px;
+            width: 200px; /* Fixed width for consistent button size */
+            text-align: center;
             text-decoration: none;
+            display: block; /* Make buttons full-width and stack vertically */
         }
-        .content a:hover {
-            text-decoration: underline;
+        .button-link:hover {
+            background-color: #005bb5;
         }
         .back-button {
             font-size: 18px;
@@ -87,6 +95,18 @@
         }
         .back-button:hover {
             background-color: #cc5200;
+        }
+        /* Specific styles for centering the Follow Us page */
+        .follow-us-container {
+            text-align: center; /* Center text within the follow-us section */
+        }
+        .follow-us-container .button-link {
+            margin-left: auto; /* Center align the button */
+            margin-right: auto; /* Center align the button */
+        }
+        /* Specific styles for left-aligning the Contacts page */
+        .contacts-container {
+            text-align: left; /* Left-align text within the contacts section */
         }
         @media (max-width: 600px) {
             h1 {
@@ -103,6 +123,11 @@
             .content p {
                 font-size: 16px;
             }
+            .button-link {
+                font-size: 16px;
+                padding: 8px 16px;
+                width: 150px; /* Adjust width for smaller screens */
+            }
             .back-button {
                 font-size: 16px;
                 padding: 8px 16px;
@@ -114,6 +139,8 @@
     <div id="welcome" class="container">
         <h1>Welcome to Sameer Enterprises</h1>
         <p>Please select an option:</p>
+        <!-- Moved Follow Us button to second place -->
+        <button class="button" onclick="showContent('follow-us')">Follow Us</button>
         <button class="button" onclick="showContent('contacts')">Contacts</button>
         <a href="https://g.page/r/CcPL1YPMjylGEBM/review" target="_blank">
             <button class="button">Review Us</button>
@@ -121,7 +148,8 @@
     </div>
 
     <div id="content" class="hidden container">
-        <div id="contacts" class="content hidden">
+        <!-- Contacts Section -->
+        <div id="contacts" class="content hidden contacts-container">
             <h1>Company Details:</h1>
             <p>Email: <a href="mailto:salarindiacorp@gmail.com">salarindiacorp@gmail.com</a></p>
             <p>Number: <a href="tel:7045692083">7045692083</a></p>
@@ -143,19 +171,33 @@
             
             <button class="button back-button" onclick="showWelcome()">Back</button>
         </div>
+
+        <!-- Follow Us Section -->
+        <div id="follow-us" class="content hidden follow-us-container">
+            <h1>Follow Us:</h1>
+            <p>Stay connected with us through our social media channels:</p>
+            <!-- Centering buttons with auto margin -->
+            <a href="https://www.instagram.com/sameertradesolution/" target="_blank" class="button-link">Instagram</a>
+            <a href="https://www.linkedin.com/company/sameer-enterprisess" target="_blank" class="button-link">LinkedIn</a>
+            
+            <button class="button back-button" onclick="showWelcome()">Back</button>
+        </div>
     </div>
 
     <script>
         function showContent(section) {
             document.getElementById('welcome').classList.add('hidden');
             document.getElementById('content').classList.remove('hidden');
-            document.getElementById('contacts').classList.remove('hidden');
+            document.getElementById('contacts').classList.add('hidden');
+            document.getElementById('follow-us').classList.add('hidden');
+            document.getElementById(section).classList.remove('hidden');
         }
 
         function showWelcome() {
             document.getElementById('welcome').classList.remove('hidden');
             document.getElementById('content').classList.add('hidden');
             document.getElementById('contacts').classList.add('hidden');
+            document.getElementById('follow-us').classList.add('hidden');
         }
     </script>
 </body>
