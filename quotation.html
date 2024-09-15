@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            padding: 10px;
+            margin: 5px 0;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th,
+        td {
+            padding: 12px;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #suggestions {
+            position: absolute;
+            top: 120px;
+            /* Adjusted to position below the input */
+            width: 100%;
+            border: 1px solid #ddd;
+            background-color: white;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        #suggestions div {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        #suggestions div:hover {
+            background-color: #f0f0f0;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quotation Generator</h1>
+        <input type="text" id="product-name" placeholder="Enter product name" onkeyup="showSuggestions(this.value)" autocomplete="off">
+        <div id="suggestions" class="hidden"></div>
+        <input type="number" id="quantity" placeholder="Enter quantity" min="0">
+        <input type="number" id="rate" placeholder="Enter rate" min="0" step="0.01">
+        <input type="number" id="gst" placeholder="Enter GST (%)" value="" min="0" step="0.01">
+        <button onclick="addItem()">Add Item</button>
+        <button onclick="generatePDF()">Generate PDF Bill</button>
+        <button onclick="clearLastInput()">Clear</button>
+        <button onclick="clearAll()">Clear All</button>
+
+        <table id="items-table">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                    <th>Rate</th>
+                    <th>GST (%)</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Items will be added here -->
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4">Grand Total</td>
+                    <td id="grand-total">0.00</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <!-- Include jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Include jsPDF autoTable plugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.24/jspdf.plugin.autotable.min.js"></script>
+
+    <script>
+        const products = [
+            "10x100T KNX Cutter Blade Alu", "10x120 Tcutter Black", "13X8 SDS Screw 1200 Nos", "1/4 ITI Pana", "1/8 ITI Pana", "3/16 ITI Pana", "4 KNX Cutter Blade", "4 MS Cutter Blade Amry", "5 Cutter Blade", "5 KNX Cutter Blade", "500w Hylogen Box", "825x16 MEF Flap", "825x16 MRF SLG 50+RN 16 TYRE", "825x16 MRF Tube Only", "Abro Tspe 1x30 Mtr", "Access Panel MR Push 600x600mm.", "Aluminium T15 Lay in Perf Ceiling Tiles 600x600", "Aluminum T/bolt", "Alumunium Cutter Blade", "Alu T15 Lay in Perforated Ceiling Tils 600x600mm", "ARM Classic Lite Microlook 600x600x16mm", "Arm Corss Tee-1200x24mm", "Arm Cross Tee-1200x15mm", "Arm Cross Tee-600x15mm", "Arm Cross Tee-600x24mm", "Arm Dew Drops", "ARM Dune Microlook 600X600X15MM", "Arm Hanger Wire", "Arm Main Runner3000x15mm", "Arm Meteor Board 600x600x12mm", "Arm Select Black 15mm Cross Tee-1200mm", "Arm Select Black15mm Main Runner-3000mm", "Armstrong Board Edge-600x600x12mm", "Armstrong Dune Board-600x600x16mm", "Armstrong G I Hanger Wire", "Armstrong Hook Clip", "Armstrong Scala Board 600x600x12mm", "Arm Wall Angle-3000x15mm", "Arm Wall Angle-3000x24mm", "Backer Road 20mm", "Backer Road 25mm", "Baker Road 12mm", "Bison Panel 8'x4'x10mm", "Bison Panel 8'x4'x18mm", "Bison Panel 8'x4'x25mm", "Bison Panel 8'x4'x6mm", "Black Sillloutte Cross Tee-1200", "Black Silloutte Cross Tee-600", "Black Silloutte Main Runner-10'", "Both Side Lock", "Bottam.8f", "Bottam-8Ft", "Butterfly Clip", "C Channel Connector", "C Channel Hanger", "Ceiling Angle 0.7x25x25x3660mm. Gypsteel", "Ceiling Angle-3660mm GypSerra AZ150", "Ceiling Angle-8Ft", "Ceiling Angle(Gypsteel Ultra)3660mm", "Ceiling Section-3660mmGypSerra AZ150", "Ceiling Section (Gypsteel Ultra) 3660mm", "Celotex Pin 595x595x15mm NRE", "Centerline Black Cross Tee-1200mm", "Centerline Black Cross Tee-600mm", "Centerline Black Main Runner-3000", "Classic RH95 Microlook 600x600x15mm (Armstrong)", "Classic RH99 Microlook 600x600x16mm (Armstrong)", "Closed Stud 48x3660mm Gypserra", "Cross Tee-1200x15mm", "Cross Tee -1200x24mm", "Cross Tee-600x15mm", "Cross Tee -600x24mm", "Cutter Blade", "CWP TEAK BOARD IVORY-2440x1220x6mm.", "DC 789 (Grey)-300ml Weatherproof Silicone Sealant", "DC Bond-It", "DC Easy Jointing Compound 10kg/Bucket", "Dc Easy Jointing Compound 5kg /bucket", "Deep Floor Channel 0.5x72x3660mm Ultra Plus", "Dew Drop Tile 595x595x8mm Gyprex", "Double Primered STD Ceiling 595x595x4mm", "Double Star Bit", "DP 12 Connector", "Drywall Screw-13mm.", "Drywall Screw-25mm", "Drywall Screw -38mm", "Drywall Screw-6x50mm", "DSG BRD Ivory Teak Panel 8'x4'x6mm", "DSG Ceiling IVORY Alpine 595x595x4mm", "DSG Ceiling IVORY Ripple 595x595x4mm", "DSG Ceiling IVORY Swirl 595x595x4mm", "DUNE MICROLOOK 1200X600X16MM.", "Dune Supreme Bev Tegular", "DWA 215 (20kg Per Nos)", "E-Board 6'x4'x10mm", "E- Board 6'x4'x6mm", "E- Board 6'x4'x8mm", "E Board 8'x4'x18mm", "E- Board 8'x4'x20mm", "Everest Artewood D Walnut", "Everest Artewood Ebony", "Everest Artewood White Pine", "EVEREST CEMENT FIBER BOARD 6'x4'x12mm.", "Everest Flexibond Jc 20kg", "Everest Floor Board 8'x4'x18mm", "Everest Jointing Compound-20 Kg", "Everest Make Electra 595x595x4mm", "Everest Make Lack & Hill 595x595x4mm", "Everest Make Oceanic 595x595x4mm", "Everest Rapicon Develled 2400x600x50mm", "Everest Tex Ceiling Board 595x595x4mm", "Fastner", "Fastner (Rawl Plug) 8x45mm", "FC Board 8'x4'x12mm", "Fine Fissured Tiles-595x595mm.", "Fixing Strip 50x74x2400mm Gypserra", "Floor Channel 50x3660mm Gypserra Gyproc", "Floor Channel 72x3660mm GypSerra", "Floor Channel 94x3660mm GypSerra", "German Touch UPR WW Drm", "G.I15- Perforated Metal Tile 600x600mm", "GI-Boltslot WB Grid CT.30x42x14.5x600", "GI Boltslot WB Grid CT.30x42x14.5x600mm", "GI-Boltslot WB Grid CT.3x42x14.5x1200", "GI Ceiling Angle-3660mm", "G.I Ceiling Section-2440mm", "GI Ceiling Section-3660mm", "GI Ceiling Section-8Ft", "GI Clip in Plain 600x600x0.5mm", "GI Floor Channel 50x3660mm", "GI Floor Channel 72x3660mm", "G.I Intermedait-2440mm", "GI Intermediat-3660mm.", "GI Intermediate-3660", "GI Intermediate-8Ft", "GI L-Angle-8FT", "GI Lay in Std Preforated with 0.5mm", "GI-Matrix Grid-1200 (24mm)", "GI-Matrix Grid-600 (24mm)", "GI-Matrix Grid-WA-3000mm.(24mm)", "GI- MatrixMT Grid-3600mm (24mm)", "GI Parameter-3660mm.", "GI Parimeter-8Ft", "G.I.Patti-U-8", "GI Plain Metal Ceiling Tiles T-15", "GI Plain Metal Tile T-24", "GI Plain Sheet 600x600mm", "GI Stud 48x2440mm", "GI Stud 48x3660mm", "GIT-24 Metal Perforated Tile", "GI Wire", "Glasswool 48Kg/50mm", "Glasswool-50mm.", "Glasswool TI 1000/25mmX16Kg/M3", "Godrej 6 Lever Pad Lock", "GS Hold on Hanger", "GS Level Adjustment Clip", "Gypboard Dampline 6'x4'x12.5mm.", "Gypframe Magnic Ceiling Angle-2440mm", "Gypframe Magnic Ceiling Angle-3660mm", "Gypframe Magnic Ceiling Section-2440mm", "Gypframe Magnic Ceiling Section-3660", "Gypframe Magnic Intermediate-3660mm", "Gypframe Magnic Perimeter-2440mm", "Gypframe Megastil Ceiling Angle-3660mm", "Gypframe Megastil Ceiling Section-3660mm", "Gypframe Megastil Intermediate Channel-3660mm", "Gypframe Megastil Perimeter Channel-3660mm", "Gypframe Prima Coupling Bracket", "Gypframe Prima Master Angle-3660mm", "Gypframe Prima Perimeter-3660mm", "Gypframe Xpert Ceiling Angle-2440mm", "Gypframe Xpert Ceiling Angle-3660mm", "Gypframe Xpert Ceiling Section-2440mm", "Gypframe Xpert Celing Section-3660mm", "Gypframe Xpert Floor Channel 50x3660mm", "Gypframe Xpert Intermediate-2440mm", "Gypframe Xpert Intermediate-3660mm", "Gypframe Xpert Parimeter-3660mm", "Gypframe Xpert Perimeter-2440mm", "Gypframe Xpert Stud 48x3660mm", "Gypfreme Prima Master Angle-3050mm", "Gypfreme Prima Master Section-3050mm.", "Gypfreme Prima Perimeter-3050mm.", "Gyplaster Instant Bonding Agent (5kg)", "Gyplyner Angle 0.50x25x25x3050MM", "Gyplyner Fixing Bracket", "Gyprex  Asepta Tile 595x595x9.5mm", "Gyprex Dome Tile 595x595x8mm", "Gyprex Granular Pvc Tiles 595x595x8mm", "Gyprex Pyramid PVC Tile 595x595x8mm", "Gyproc Angle Beed-2440mm.", "Gyproc Bond-It", "Gyproc Ceiling Section-3660mm", "Gyproc Connecting Clip (100Nos/Pkt)", "Gyproc Deep Floor Channel .9x72x70x3660mm.", "Gyproc Drywall Screw-25mm(1000Nos/Pkt)", "Gyproc Drywall Screw-25mm (500/Pkt)", "Gyproc Drywall Screw-35mm(500Nos/Pkt)", "Gyproc Drywall Screw-6x50mm (500Nos/Pkt)", "Gyproc Elite 100 NG Gypsum Plaster", "Gyproc Elite-90 Gypsum Plaster-25kg/Bag", "Gyproc Elite FP NG Gypsum Plaster", "Gyproc  Elite MR NG Gypsum Plaster", "Gyproc FCBoard8'x4'x12mm", "Gyproc Fiber Glass Tape", "Gyproc Floor Channel 94x3660mm", "Gyproc Glasroc H Board 1200x2400x12.5mm", "Gyproc Glasroc H Board 1220x1830x12.5mm", "Gyproc Glasroc H Board 1220x2440x12.5mm", "Gyproc Glass Fiber Mesh", "Gyproc Glasswool Bracket", "Gyproc Gyplaster Instant Bonding Agent-10Kg", "Gyproc Gypsum Board Duraline 8'x4'x13mm", "Gyproc Gypsum Board FR 6'x4'x12.5mm", "Gyproc Gypsum Board FR 6'x4'x15mm", "Gyproc Gypsum Board FR 8'x4'x12.5mm", "Gyproc Gypsum Board FR 8'x4'x15mm", "Gyproc Gypsum Board PL 6'x4'x9.5mm", "Gyproc Gypsum Board Sound Block 1200x1830x12.5mm", "Gyproc Gyptone FT 595x595x12.5mm", "Gyproc Joint Paper Tape", "Gyproc Kool Board 6'x4x'x12.5mm.", "Gyproc L-Angle 30x30x45mm", "Gyproc Level Clips (Butterfly Clips)", "Gyproc Levelline (R) Corner Tape", "Gyproc Maxtra Cross Tee-1200x24mm", "Gyproc Maxtra Cross Tee-600x24mm", "Gyproc Maxtra Main Runner-3000x24mm", "Gyproc Maxtra Wall Angle-3000x24mm", "Gyproc Metel To Metal Screw-13mm(500Nos/Pkt)", "Gyproc Micro White Wall Angle-3050mm", "Gyproc Mixing Rod", "Gyproc Noggin Channel 48x695mm Gypserra", "Gyproc Noggin Channel 70x695mm", "Gyproc Noggin Channel 92x695mm", "Gyproc Phillips PanHead Screw(250Nos/Pkt)", "Gyproc Polyshield Tile 595x595x12.5mm", "Gyproc Polyshield Tile 595x595x9.5mm", "Gyproc Protop Ready Mix Jc 20kg", "Gyproc Protop Ready Mix Jc 30Kg", "Gyproc Protop Ready Mix JC 5Kg", "Gyproc Rawl Plug 8x45mm(100Nos/pkt)", "Gyproc Rawl Plug 8x60mm", "Gyproc Soffit Cleate(50Nos/Pkt)", "Gyproc Sofit Cleat", "GYproc  Starter Channel -.7x92x3660mm. GYPSTL+", "Gyproc Stud 70x3660mm", "Gyproc Stud 92x3660mm", "Gyproc Supreme 68 One Coat Gyp.Plaster", "Gyproc Supreme 80 (NG) -25Kg", "Gyproc Truesteel Ceiling Angle-3660mm", "Gyproc True Steel Ceiling Section-3660mm", "Gyproc Truesteel Intermediate-3660mm.", "Gyproc Truesteel Parimeter-3660mm", "Gyproc Xpert  NG Gypsum Plaster", "Gyproc Xpert  NG Gypsum Plaster-25Kg", "Gypserra Floor Channel 148x3660mm", "Gypserra Stud 146x3660mm", "Gypsum Board MR  6'x4'x12.5mm", "Gypsum Board PL 6'x4'x12.5mm", "Gypsum Board PL-6'x4'x12mm.", "Gypsum Plaster (NG)", "Habito Board 1220x2440x12.5mm", "Habito Board 8'x4'x12.5mm", "Habito Screw-25mm", "Hammer Pana-160mm", "Hilux Calcium Silicate Board 6'x4'x6mm", "Hilux Calcium Silicate Board 6'x4'x8mm", "Hilux Calcium Silicate Board 600x600x8mm", "Hilux Calcium Silicate Board 8'x4'x10mm", "Hilux Calcium Silicate Board 8'x4'x6mm", "Hilux Calcium Slicate 8'x4'x12mm", "Hook Clip 2.5 J Wire Assembly", "HP R58GB 512GB 4GB", "HSS Pana", "Intermediat-3660mm GypSerra", "Intermediate (GypsteelUltra)3660mm", "Jali Mesh-R", "Jali Mesh-S", "Jointing Compound Easi-Fill Quick Set", "Jointing Compound Eisy Fill-20Kg", "Kanas 4", "L-315 G", "L 325 (50Kg Per Bag)", "L 325 Grey 50Kg Per Bag (MYK MAKE)", "L 325W/50KG PER BAG ( MYK MAKE)", "L 335W (5okg Per Bag)", "Main Runner -3000x15mm", "Main Runner -3000x24mm", "Metal To Metal Screw-25mm.", "Metal To Metal Screw-60mm", "Metal To Metal Screw 6x13", "Mineral Fiber Pinehole Tile-600x600x12mm.", "Moisture Barrier (17.4Sqm/PC)", "MYK 325 Hf-Glass Mosaic Adhesive White-50", "Myk DWA 215 Thinset (20kg)", "Patti-8Ft", "Perimer", "Perimeter-3660mm GypSerra AZ150", "Perimeter 8Ft", "Pinhole Microlook 595x595x15mm.", "Pinhole Sq Tiles", "Primer", "Pro1 Grid CT-1200mm", "Pro1 Grid CT-600mm", "Pro1 Grid MT-3000mm", "Pro1 Grid Wall Angle-3000mm", "Protop Ready Mix JC-10Kg", "Providing & Making of GI Channel 75x20x12x2440mm", "Providing & Making of GI Channel 75x29x2440mm", "PU Silicon Gun", "Pvc Gypsum Ceiling Tiles", "Pvc Gypsum Ceiling Tiles (P)", "Pvc Panel-3000mm.", "Pvc Rawl Plug", "Pvc Tiles", "Rawal Plug-35mm", "Rawal Plug -50mm", "R.B.Glasswool16Kg/50mm", "Rigiroc Board 1220x2440x13mm", "Rigitone Active Air (122066)1188x1980x12.5mm", "Rigitone Active Air 8-18 1188x1998x12.5mm", "Rockwool 48Kg/M3x50mm", "Safety Stud Anchor", "Sand Microlook 15mm", "Self Adhesive Tape", "Shadowline Section", "Shadow Moulding", "Shera Plank Straight V-Cut", "Silicone Clear", "Single Primered STD Ceiling 595x595x4mm", "Sofit Cleat 30x37x1.6mm (50Nos/Pkt)", "Soundblock Board 1220x1830x12.5mm", "Star Bit", "Stud 48x3660mm Gypserra Gyproc", "Stud 70x3050mm GypSerra", "Stud 70x3660mm GypSerra", "Stud 92x3660mm GypSerra", "Taparia Double Star Bit 10nos", "T- Glass", "Tissue Paper", "Trap Door 1200x600", "Trap Door 300x300mm", "Trap Door 450X450mm.", "Trap Door-600x600", "Trap Door 600x900mm", "USG Boral ST50 Ceiling Angle0.5x3660mm", "USG Boral ST50 Ceiling Section 0.5x3660mm", "USG Boral ST50 Perimeter0.5x3660mm", "Usg Boral Starfish Gyp Tiles", "Usg Main Runner-3600x15mm", "USG Olympia FLB 600x600x16mm", "USG Pin-FLB 600x600x16mm", "USG Pinhole 600x600x12mm", "USG Radar Flab 600x600x16mm", "Vario JT Filler (5 Kg)", "Wall Angle-3000x15mm", "Wall Angle-3000x24mm", "White Silloute Cross Tee-1200mm", "White Silloute Cross Tee-600mm", "White Silloutte Main Runner-10'", "Loading", "Loading & Unloading","Freight",
+        ];
+
+        function showSuggestions(value) {
+            const suggestions = document.getElementById('suggestions');
+            suggestions.innerHTML = '';
+            suggestions.classList.add('hidden');
+            if (value.length > 0) {
+                const filteredProducts = products.filter(product => product.toLowerCase().includes(value.toLowerCase()));
+                filteredProducts.forEach(product => {
+                    const div = document.createElement('div');
+                    div.textContent = product;
+                    div.onclick = function () {
+                        document.getElementById('product-name').value = product;
+                        suggestions.classList.add('hidden');
+                    };
+                    suggestions.appendChild(div);
+                });
+                if (filteredProducts.length > 0) {
+                    suggestions.classList.remove('hidden');
+                }
+            }
+        }
+
+        let items = [];
+        let grandTotal = 0;
+
+        function addItem() {
+            const productName = document.getElementById('product-name').value;
+            const quantity = parseFloat(document.getElementById('quantity').value) || 0;
+            const rate = parseFloat(document.getElementById('rate').value) || 0;
+            const gst = parseFloat(document.getElementById('gst').value) || 0;
+
+            if (productName && (quantity || rate)) {
+                let total;
+
+                if (quantity === 0) {
+                    // If quantity is 0, total is just the rate
+                    total = rate;
+                } else {
+                    const gstAmount = (rate * quantity * gst) / 100;
+                    total = (rate * quantity) + gstAmount;
+                }
+
+                items.push({ productName, quantity: quantity === 0 ? '' : quantity, rate: quantity === 0 ? '' : rate, gst, total });
+
+                const tableBody = document.querySelector('#items-table tbody');
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${productName}</td>
+                    <td>${quantity === 0 ? '' : quantity}</td>
+                    <td>${quantity === 0 ? '' : rate}</td>
+                    <td>${gst}</td>
+                    <td>${total.toFixed(2)}</td>
+                `;
+                tableBody.appendChild(row);
+
+                grandTotal += total;
+                document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
+
+                clearLastInput();
+            } else {
+                alert("Please fill in the product name and at least one of quantity or rate.");
+            }
+        }
+
+        function clearLastInput() {
+            document.getElementById('product-name').value = '';
+            document.getElementById('quantity').value = '';
+            document.getElementById('rate').value = '';
+            document.getElementById('gst').value = '';
+        }
+
+        function clearAll() {
+            document.querySelector('#items-table tbody').innerHTML = '';
+            document.getElementById('grand-total').textContent = '0.00';
+            grandTotal = 0;
+            items = [];
+        }
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.text("Quotation Bill", 10, 10);
+            doc.autoTable({
+                head: [['Product Name', 'Quantity', 'Rate', 'GST (%)', 'Total']],
+                body: items.map(item => [item.productName, item.quantity, item.rate, item.gst, item.total.toFixed(2)]),
+                foot: [['', '', '', 'Grand Total', grandTotal.toFixed(2)]]
+            });
+
+            doc.save("quotation.pdf");
+        }
+    </script>
+</body>
+</html>
