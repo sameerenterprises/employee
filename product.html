@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .suggestions {
+            border: 1px solid #ccc;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            background-color: #fff;
+            position: absolute;
+            width: 100%;
+            z-index: 1000;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .suggestion {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .suggestion:hover {
+            background-color: #f0f0f0;
+        }
+
+        .product-details {
+            margin-top: 20px;
+        }
+
+        .product-details h2 {
+            margin-top: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .back-button {
+            display: block;
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #28a745;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .back-button:hover {
+            background-color: #218838;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="search-container">
+            <input type="text" id="product-search" placeholder="Search for a product...">
+            <div class="suggestions" id="suggestions"></div>
+        </div>
+
+        <div class="product-details" id="product-details" style="display: none;">
+            <h2 id="product-name"></h2>
+            <table class="vertical-table">
+                <tr id="bundle-row">
+                    <th>Bundle</th>
+                    <td id="bundle"></td>
+                </tr>
+                <tr id="bill-rate-row">
+                    <th>Bill Rate</th>
+                    <td id="bill-rate"></td>
+                </tr>
+                <tr id="gst-rate-row">
+                    <th>GST Rate</th>
+                    <td id="gst-rate"></td>
+                </tr>
+                <tr id="cash-rate-row">
+                    <th>Cash Rate</th>
+                    <td id="cash-rate"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Products now as arrays with values: [bundle, billRate, gstRate, cashRate]
+        const products = [
+            { name: "10x100T KNX Cutter Blade Alu", values: ["", "1583.33", "18%", ""] },
+            { name: "10x120 Tcutter Black", values: ["", "1750", "18%", ""] },
+            { name: "13X8 SDS Screw 1200 Nos", values: ["", "384", "18%", ""] },
+            { name: "1/4 ITI Pana", values: ["", "950", "18%", ""] },
+            { name: "1/8 ITI Pana", values: ["", "230", "18%", ""] },
+            { name: "3/16 ITI Pana", values: ["", "650", "18%", ""] },
+            { name: "4 KNX Cutter Blade", values: ["", "250", "18%", ""] },
+            { name: "4 MS Cutter Blade Amry", values: ["", "20", "18%", ""] },
+            { name: "5 Cutter Blade", values: ["", "350", "18%", ""] },
+            { name: "5 KNX Cutter Blade", values: ["", "325", "18%", ""] },
+            { name: "500w Hylogen Box", values: ["", "650", "18%", ""] },
+            { name: "825x16 MEF Flap", values: ["", "377.61", "18%", ""] },
+            { name: "825x16 MRF SLG 50+RN 16 TYRE", values: ["", "9231.77", "18%", ""] },
+            { name: "825x16 MRF Tube Only", values: ["", "703.13", "18%", ""] },
+            { name: "Abro Tspe 1x30 Mtr", values: ["", "195", "18%", ""] },
+            { name: "Access Panel MR Push 600x600mm.", values: ["", "2546.5", "18%", ""] },
+            { name: "Aluminium T15 Lay in Perf Ceiling Tiles 600x600", values: ["", "360", "18%", ""] },
+            { name: "Aluminum T/bolt", values: ["", "30", "18%", ""] },
+            { name: "Alumunium Cutter Blade", values: ["", "1450", "18%", ""] },
+            { name: "Alu T15 Lay in Perforated Ceiling Tils 600x600mm", values: ["", "370", "18%", ""] },
+            { name: "ARM Classic Lite Microlook 600x600x16mm", values: ["", "293.73", "18%", ""] },
+            { name: "Arm Corss Tee-1200x24mm", values: ["", "67", "18%", ""] },
+            { name: "Arm Cross Tee-1200x15mm", values: ["", "74.98", "18%", ""] },
+            { name: "Arm Cross Tee-600x15mm", values: ["", "37.95", "18%", ""] },
+            { name: "Arm Cross Tee-600x24mm", values: ["", "39.92", "18%", ""] },
+            { name: "Arm Dew Drops", values: ["", "70", "18%", ""] },
+            { name: "ARM Dune Microlook 600X600X15MM", values: ["", "320", "18%", ""] },
+            { name: "Arm Hanger Wire", values: ["", "18", "18%", ""] },
+            { name: "Arm Main Runner3000x15mm", values: ["", "188.75", "18%", ""] },
+            { name: "Arm Meteor Board 600x600x12mm", values: ["", "96.88", "18%", ""] },
+            { name: "Arm Select Black 15mm Cross Tee-1200mm", values: ["", "72.14", "18%", ""] },
+            { name: "Arm Select Black15mm Main Runner-3000mm", values: ["", "195.01", "18%", ""] },
+            { name: "Armstrong Board Edge-600x600x12mm", values: ["", "139.76", "18%", ""] },
+            { name: "Armstrong Dune Board-600x600x16mm", values: ["", "345", "18%", ""] },
+            { name: "Armstrong G I Hanger Wire", values: ["", "24", "18%", ""] },
+            { name: "Armstrong Hook Clip", values: ["", "41", "18%", ""] },
+            { name: "Armstrong Scala Board 600x600x12mm", values: ["", "148.04", "18%", ""] },
+            { name: "Arm Wall Angle-3000x15mm", values: ["", "128.45", "18%", ""] },
+            { name: "Arm Wall Angle-3000x24mm", values: ["", "118.99", "18%", ""] },
+            { name: "Backer Road 20mm", values: ["", "10", "18%", ""] },
+            { name: "Backer Road 25mm", values: ["", "15", "18%", ""] },
+            { name: "Baker Road 12mm", values: ["", "6", "18%", ""] },
+            { name: "Bison Panel 8'x4'x10mm", values: ["", "1078.8", "18%", ""] },
+            { name: "Bison Panel 8'x4'x18mm", values: ["", "1639.68", "18%", ""] },
+            { name: "Bison Panel 8'x4'x25mm", values: ["", "2316.38", "18%", ""] },
+            { name: "Bison Panel 8'x4'x6mm", values: ["", "585.15", "18%", ""] },
+            { name: "Black Sillloutte Cross Tee-1200", values: ["", "85.5", "18%", ""] },
+            { name: "Black Silloutte Cross Tee-600", values: ["", "40.27", "18%", ""] },
+            { name: "Black Silloutte Main Runner-10'", values: ["", "208.54", "18%", ""] },
+            { name: "Both Side Lock", values: ["", "150", "18%", ""] },
+            { name: "Bottam.8f", values: ["", "40.71", "18%", ""] },
+            { name: "Bottam-8Ft", values: ["", "41.3", "18%", ""] },
+            { name: "Butterfly Clip", values: ["", "7.14", "18%", ""] },
+            { name: "C Channel Connector", values: ["", "15", "18%", ""] },
+            { name: "C Channel Hanger", values: ["", "18", "18%", ""] },
+            { name: "Ceiling Angle 0.7x25x25x3660mm. Gypsteel", values: ["", "206.37", "18%", ""] },
+            { name: "Ceiling Angle-3660mm GypSerra AZ150", values: ["", "93.05", "18%", ""] },
+            { name: "Ceiling Angle-8Ft", values: ["", "12.2", "18%", ""] },
+            { name: "Ceiling Angle(Gypsteel Ultra)3660mm", values: ["", "80.3", "18%", ""] },
+            { name: "Ceiling Section-3660mmGypSerra AZ150", values: ["", "287.28", "18%", ""] },
+            { name: "Ceiling Section (Gypsteel Ultra) 3660mm", values: ["", "254.2", "18%", ""] },
+            { name: "Celotex Pin 595x595x15mm NRE", values: ["", "247.27", "18%", ""] },
+            { name: "Centerline Black Cross Tee-1200mm", values: ["", "36.59", "18%", ""] },
+            { name: "Centerline Black Cross Tee-600mm", values: ["", "18.4", "18%", ""] },
+            { name: "Centerline Black Main Runner-3000", values: ["", "91.91", "18%", ""] },
+            { name: "Classic RH95 Microlook 600x600x15mm (Armstrong)", values: ["", "249.51", "18%", ""] },
+            { name: "Classic RH99 Microlook 600x600x16mm (Armstrong)", values: ["", "295.97", "18%", ""] },
+            { name: "Closed Stud 48x3660mm Gypserra", values: ["", "498.54", "18%", ""] },
+            { name: "Cross Tee-1200x15mm", values: ["", "32.94", "18%", ""] },
+            { name: "Cross Tee -1200x24mm", values: ["", "28.66", "18%", ""] },
+            { name: "Cross Tee-600x15mm", values: ["", "16.17", "18%", ""] },
+            { name: "Cross Tee -600x24mm", values: ["", "14.38", "18%", ""] },
+            { name: "Cutter Blade", values: ["", "325", "18%", ""] },
+            { name: "CWP TEAK BOARD IVORY-2440x1220x6mm.", values: ["", "757.6", "18%", ""] },
+            { name: "DC 789 (Grey)-300ml Weatherproof Silicone Sealant", values: ["", "235", "18%", ""] },
+            { name: "DC Bond-It", values: ["", "72", "18%", ""] },
+            { name: "DC Easy Jointing Compound 10kg/Bucket", values: ["", "85", "18%", ""] },
+            { name: "Dc Easy Jointing Compound 5kg /bucket", values: ["", "85", "18%", ""] },
+            { name: "Deep Floor Channel 0.5x72x3660mm Ultra Plus", values: ["", "324.89", "18%", ""] },
+            { name: "Dew Drop Tile 595x595x8mm Gyprex", values: ["", "71.16", "18%", ""] },
+            { name: "Double Primered STD Ceiling 595x595x4mm", values: ["", "54.39", "18%", ""] },
+            { name: "Double Star Bit", values: ["", "45", "18%", ""] },
+            { name: "DP 12 Connector", values: ["", "8", "18%", ""] },
+            { name: "Drywall Screw-13mm.", values: ["", "131.66", "18%", ""] },
+            { name: "Drywall Screw-25mm", values: ["", "127.51", "18%", ""] },
+            { name: "Drywall Screw -38mm", values: ["", "133.43", "18%", ""] },
+            { name: "Drywall Screw-6x50mm", values: ["", "105.96", "18%", ""] },
+            { name: "DSG BRD Ivory Teak Panel 8'x4'x6mm", values: ["", "748.47", "18%", ""] },
+            { name: "DSG Ceiling IVORY Alpine 595x595x4mm", values: ["", "66.1", "18%", ""] },
+            { name: "DSG Ceiling IVORY Ripple 595x595x4mm", values: ["", "66.1", "18%", ""] },
+            { name: "DSG Ceiling IVORY Swirl 595x595x4mm", values: ["", "66.1", "18%", ""] },
+            { name: "DUNE MICROLOOK 1200X600X16MM.", values: ["", "369.13", "18%", ""] },
+            { name: "Dune Supreme Bev Tegular", values: ["", "291.39", "18%", ""] },
+            { name: "DWA 215 (20kg Per Nos)", values: ["", "2196", "18%", ""] },
+            { name: "E-Board 6'x4'x10mm", values: ["", "519.82", "18%", ""] },
+            { name: "E- Board 6'x4'x6mm", values: ["", "352.11", "18%", ""] },
+            { name: "E- Board 6'x4'x8mm", values: ["", "426.78", "18%", ""] },
+            { name: "E Board 8'x4'x18mm", values: ["", "1251.74", "18%", ""] },
+            { name: "E- Board 8'x4'x20mm", values: ["", "1412.02", "18%", ""] },
+            { name: "Everest Artewood D Walnut", values: ["", "271", "18%", ""] },
+            { name: "Everest Artewood Ebony", values: ["", "278.71", "18%", ""] },
+            { name: "Everest Artewood White Pine", values: ["", "235.87", "18%", ""] },
+            { name: "EVEREST CEMENT FIBER BOARD 6'x4'x12mm.", values: ["", "621.98", "18%", ""] },
+            { name: "Everest Flexibond Jc 20kg", values: ["", "1171.19", "18%", ""] },
+            { name: "Everest Floor Board 8'x4'x18mm", values: ["", "1275.32", "18%", ""] },
+            { name: "Everest Jointing Compound-20 Kg", values: ["", "3898.31", "18%", ""] },
+            { name: "Everest Make Electra 595x595x4mm", values: ["", "56.71", "18%", ""] },
+            { name: "Everest Make Lack & Hill 595x595x4mm", values: ["", "56.72", "18%", ""] },
+            { name: "Everest Make Oceanic 595x595x4mm", values: ["", "55.41", "18%", ""] },
+            { name: "Everest Rapicon Develled 2400x600x50mm", values: ["", "839.59", "18%", ""] },
+            { name: "Everest Tex Ceiling Board 595x595x4mm", values: ["", "47.44", "18%", ""] },
+            { name: "Fastner", values: ["", "124.59", "18%", ""] },
+            { name: "Fastner (Rawl Plug) 8x45mm", values: ["", "137.55", "18%", ""] },
+            { name: "FC Board 8'x4'x12mm", values: ["", "846.41", "18%", ""] },
+            { name: "Fine Fissured Tiles-595x595mm.", values: ["", "98.63", "18%", ""] },
+            { name: "Fixing Strip 50x74x2400mm Gypserra", values: ["", "132.39", "18%", ""] },
+            { name: "Floor Channel 50x3660mm Gypserra Gyproc", values: ["", "277.82", "18%", ""] },
+            { name: "Floor Channel 72x3660mm GypSerra", values: ["", "333.01", "18%", ""] },
+            { name: "Floor Channel 94x3660mm GypSerra", values: ["", "484.22", "18%", ""] },
+            { name: "German Touch UPR WW Drm", values: ["", "12500", "18%", ""] },
+            { name: "G.I15- Perforated Metal Tile 600x600mm", values: ["", "190.27", "18%", ""] },
+            { name: "GI-Boltslot WB Grid CT.30x42x14.5x600", values: ["", "50.47", "18%", ""] },
+            { name: "GI Boltslot WB Grid CT.30x42x14.5x600mm", values: ["", "50.48", "18%", ""] },
+            { name: "GI-Boltslot WB Grid CT.3x42x14.5x1200", values: ["", "107.01", "18%", ""] },
+            { name: "GI Ceiling Angle-3660mm", values: ["", "35.22", "18%", ""] },
+            { name: "G.I Ceiling Section-2440mm", values: ["", "44", "18%", ""] },
+            { name: "GI Ceiling Section-3660mm", values: ["", "85.93", "18%", ""] },
+            { name: "GI Ceiling Section-8Ft", values: ["", "44.24", "18%", ""] },
+            { name: "GI Clip in Plain 600x600x0.5mm", values: ["", "325", "18%", ""] },
+            { name: "GI Floor Channel 50x3660mm", values: ["", "95.69", "18%", ""] },
+            { name: "GI Floor Channel 72x3660mm", values: ["", "153.03", "18%", ""] },
+            { name: "G.I Intermedait-2440mm", values: ["", "42.29", "18%", ""] },
+            { name: "GI Intermediat-3660mm.", values: ["", "94.32", "18%", ""] },
+            { name: "GI Intermediate-3660", values: ["", "71.23", "18%", ""] },
+            { name: "GI Intermediate-8Ft", values: ["", "42.17", "18%", ""] },
+            { name: "GI L-Angle-8FT", values: ["", "17.05", "18%", ""] },
+            { name: "GI Lay in Std Preforated with 0.5mm", values: ["", "409.33", "18%", ""] },
+            { name: "GI-Matrix Grid-1200 (24mm)", values: ["", "52.19", "18%", ""] },
+            { name: "GI-Matrix Grid-600 (24mm)", values: ["", "25.36", "18%", ""] },
+            { name: "GI-Matrix Grid-WA-3000mm.(24mm)", values: ["", "108.49", "18%", ""] },
+            { name: "GI- MatrixMT Grid-3600mm (24mm)", values: ["", "141.32", "18%", ""] },
+            { name: "GI Parameter-3660mm.", values: ["", "52.4", "18%", ""] },
+            { name: "GI Parimeter-8Ft", values: ["", "30.54", "18%", ""] },
+            { name: "G.I.Patti-U-8", values: ["", "29.76", "18%", ""] },
+            { name: "GI Plain Metal Ceiling Tiles T-15", values: ["", "251.42", "18%", ""] },
+            { name: "GI Plain Metal Tile T-24", values: ["", "166", "18%", ""] },
+            { name: "GI Plain Sheet 600x600mm", values: ["", "175", "18%", ""] },
+            { name: "GI Stud 48x2440mm", values: ["", "85.54", "18%", ""] },
+            { name: "GI Stud 48x3660mm", values: ["", "101.28", "18%", ""] },
+            { name: "GIT-24 Metal Perforated Tile", values: ["", "186.17", "18%", ""] },
+            { name: "GI Wire", values: ["", "", "18%", ""] },
+            { name: "Glasswool 48Kg/50mm", values: ["", "160", "18%", ""] },
+            { name: "Glasswool-50mm.", values: ["", "93.97", "18%", ""] },
+            { name: "Glasswool TI 1000/25mmX16Kg/M3", values: ["", "159.45", "18%", ""] },
+            { name: "Godrej 6 Lever Pad Lock", values: ["", "341", "18%", ""] },
+            { name: "GS Hold on Hanger", values: ["", "7.5", "18%", ""] },
+            { name: "GS Level Adjustment Clip", values: ["", "8.5", "18%", ""] },
+            { name: "Gypboard Dampline 6'x4'x12.5mm.", values: ["", "444.78", "18%", ""] },
+            { name: "Gypframe Magnic Ceiling Angle-2440mm", values: ["", "30.68", "18%", ""] },
+            { name: "Gypframe Magnic Ceiling Angle-3660mm", values: ["", "", "18%", ""] },
+            { name: "Gypframe Magnic Ceiling Section-2440mm", values: ["", "72.66", "18%", ""] },
+            { name: "Gypframe Magnic Ceiling Section-3660", values: ["", "", "18%", ""] },
+            { name: "Gypframe Magnic Intermediate-3660mm", values: ["", "", "18%", ""] },
+            { name: "Gypframe Magnic Perimeter-2440mm", values: ["", "42.71", "18%", ""] },
+            { name: "Gypframe Megastil Ceiling Angle-3660mm", values: ["", "70.22", "18%", ""] },
+            { name: "Gypframe Megastil Ceiling Section-3660mm", values: ["", "230.35", "18%", ""] },
+            { name: "Gypframe Megastil Intermediate Channel-3660mm", values: ["", "221.46", "18%", ""] },
+            { name: "Gypframe Megastil Perimeter Channel-3660mm", values: ["", "145.21", "18%", ""] },
+            { name: "Gypframe Prima Coupling Bracket", values: ["", "8.41", "18%", ""] },
+            { name: "Gypframe Prima Master Angle-3660mm", values: ["", "88.95", "18%", ""] },
+            { name: "Gypframe Prima Perimeter-3660mm", values: ["", "119.38", "18%", ""] },
+            { name: "Gypframe Xpert Ceiling Angle-2440mm", values: ["", "35.06", "18%", ""] },
+            { name: "Gypframe Xpert Ceiling Angle-3660mm", values: ["", "52.41", "18%", ""] },
+            { name: "Gypframe Xpert Ceiling Section-2440mm", values: ["", "103.1", "18%", ""] },
+            { name: "Gypframe Xpert Celing Section-3660mm", values: ["", "156.57", "18%", ""] },
+            { name: "Gypframe Xpert Floor Channel 50x3660mm", values: ["", "207.66", "18%", ""] },
+            { name: "Gypframe Xpert Intermediate-2440mm", values: ["", "104.61", "18%", ""] },
+            { name: "Gypframe Xpert Intermediate-3660mm", values: ["", "155.3", "18%", ""] },
+            { name: "Gypframe Xpert Parimeter-3660mm", values: ["", "105.44", "18%", ""] },
+            { name: "Gypframe Xpert Perimeter-2440mm", values: ["", "70.13", "18%", ""] },
+            { name: "Gypframe Xpert Stud 48x3660mm", values: ["", "217.54", "18%", ""] },
+            { name: "Gypfreme Prima Master Angle-3050mm", values: ["", "79.02", "18%", ""] },
+            { name: "Gypfreme Prima Master Section-3050mm.", values: ["", "171.31", "18%", ""] },
+            { name: "Gypfreme Prima Perimeter-3050mm.", values: ["", "120.31", "18%", ""] },
+            { name: "Gyplaster Instant Bonding Agent (5kg)", values: ["", "92.76", "18%", ""] },
+            { name: "Gyplyner Angle 0.50x25x25x3050MM", values: ["", "113.34", "18%", ""] },
+            { name: "Gyplyner Fixing Bracket", values: ["", "10.55", "18%", ""] },
+            { name: "Gyprex  Asepta Tile 595x595x9.5mm", values: ["", "211.4", "18%", ""] },
+            { name: "Gyprex Dome Tile 595x595x8mm", values: ["", "78.95", "18%", ""] },
+            { name: "Gyprex Granular Pvc Tiles 595x595x8mm", values: ["", "67.5", "18%", ""] },
+            { name: "Gyprex Pyramid PVC Tile 595x595x8mm", values: ["", "71.88", "18%", ""] },
+            { name: "Gyproc Angle Beed-2440mm.", values: ["", "79.45", "18%", ""] },
+            { name: "Gyproc Bond-It", values: ["", "118.56", "18%", ""] },
+            { name: "Gyproc Ceiling Section-3660mm", values: ["", "205.36", "18%", ""] },
+            { name: "Gyproc Connecting Clip (100Nos/Pkt)", values: ["", "444.26", "18%", ""] },
+            { name: "Gyproc Deep Floor Channel .9x72x70x3660mm.", values: ["", "1209.36", "18%", ""] },
+            { name: "Gyproc Drywall Screw-25mm(1000Nos/Pkt)", values: ["", "327.47", "18%", ""] },
+            { name: "Gyproc Drywall Screw-25mm (500/Pkt)", values: ["", "200.28", "18%", ""] },
+            { name: "Gyproc Drywall Screw-35mm(500Nos/Pkt)", values: ["", "236.08", "18%", ""] },
+            { name: "Gyproc Drywall Screw-6x50mm (500Nos/Pkt)", values: ["", "314.31", "18%", ""] },
+            { name: "Gyproc Elite 100 NG Gypsum Plaster", values: ["", "288.45", "18%", ""] },
+            { name: "Gyproc Elite-90 Gypsum Plaster-25kg/Bag", values: ["", "156.15", "18%", ""] },
+            { name: "Gyproc Elite FP NG Gypsum Plaster", values: ["", "568.15", "18%", ""] },
+            { name: "Gyproc  Elite MR NG Gypsum Plaster", values: ["", "329.05", "18%", ""] },
+            { name: "Gyproc FCBoard8'x4'x12mm", values: ["", "1920.94", "18%", ""] },
+            { name: "Gyproc Fiber Glass Tape", values: ["", "121.82", "18%", ""] },
+            { name: "Gyproc Floor Channel 94x3660mm", values: ["", "344.73", "18%", ""] },
+            { name: "Gyproc Glasroc H Board 1200x2400x12.5mm", values: ["", "1437.07", "18%", ""] },
+            { name: "Gyproc Glasroc H Board 1220x1830x12.5mm", values: ["", "1077.14", "18%", ""] },
+            { name: "Gyproc Glasroc H Board 1220x2440x12.5mm", values: ["", "1503.72", "18%", ""] },
+            { name: "Gyproc Glass Fiber Mesh", values: ["", "321.91", "18%", ""] },
+            { name: "Gyproc Glasswool Bracket", values: ["", "9.34", "18%", ""] },
+            { name: "Gyproc Gyplaster Instant Bonding Agent-10Kg", values: ["", "79.27", "18%", ""] },
+            { name: "Gyproc Gypsum Board Duraline 8'x4'x13mm", values: ["", "1094.62", "18%", ""] },
+            { name: "Gyproc Gypsum Board FR 6'x4'x12.5mm", values: ["", "600.37", "18%", ""] },
+            { name: "Gyproc Gypsum Board FR 6'x4'x15mm", values: ["", "767.1", "18%", ""] },
+            { name: "Gyproc Gypsum Board FR 8'x4'x12.5mm", values: ["", "764.22", "18%", ""] },
+            { name: "Gyproc Gypsum Board FR 8'x4'x15mm", values: ["", "839.48", "18%", ""] },
+            { name: "Gyproc Gypsum Board PL 6'x4'x9.5mm", values: ["", "357.36", "18%", ""] },
+            { name: "Gyproc Gypsum Board Sound Block 1200x1830x12.5mm", values: ["", "1317.73", "18%", ""] },
+            { name: "Gyproc Gyptone FT 595x595x12.5mm", values: ["", "172.96", "18%", ""] },
+            { name: "Gyproc Joint Paper Tape", values: ["", "138.12", "18%", ""] },
+            { name: "Gyproc Kool Board 6'x4x'x12.5mm.", values: ["", "435.9", "18%", ""] },
+            { name: "Gyproc L-Angle 30x30x45mm", values: ["", "8.48", "18%", ""] },
+            { name: "Gyproc Level Clips (Butterfly Clips)", values: ["", "8.16", "18%", ""] },
+            { name: "Gyproc Levelline (R) Corner Tape", values: ["", "2638.76", "18%", ""] },
+            { name: "Gyproc Maxtra Cross Tee-1200x24mm", values: ["", "35.81", "18%", ""] },
+            { name: "Gyproc Maxtra Cross Tee-600x24mm", values: ["", "17.81", "18%", ""] },
+            { name: "Gyproc Maxtra Main Runner-3000x24mm", values: ["", "99.22", "18%", ""] },
+            { name: "Gyproc Maxtra Wall Angle-3000x24mm", values: ["", "67.89", "18%", ""] },
+            { name: "Gyproc Metel To Metal Screw-13mm(500Nos/Pkt)", values: ["", "352.24", "18%", ""] },
+            { name: "Gyproc Micro White Wall Angle-3050mm", values: ["", "60.81", "18%", ""] },
+            { name: "Gyproc Mixing Rod", values: ["", "295.3", "18%", ""] },
+            { name: "Gyproc Noggin Channel 48x695mm Gypserra", values: ["", "75.12", "18%", ""] },
+            { name: "Gyproc Noggin Channel 70x695mm", values: ["", "82.1", "18%", ""] },
+            { name: "Gyproc Noggin Channel 92x695mm", values: ["", "90.34", "18%", ""] },
+            { name: "Gyproc Phillips PanHead Screw(250Nos/Pkt)", values: ["", "896.01", "18%", ""] },
+            { name: "Gyproc Polyshield Tile 595x595x12.5mm", values: ["", "159.89", "18%", ""] },
+            { name: "Gyproc Polyshield Tile 595x595x9.5mm", values: ["", "158.46", "18%", ""] },
+            { name: "Gyproc Protop Ready Mix Jc 20kg", values: ["", "722.97", "18%", ""] },
+            { name: "Gyproc Protop Ready Mix Jc 30Kg", values: ["", "1012.49", "18%", ""] },
+            { name: "Gyproc Protop Ready Mix JC 5Kg", values: ["", "185.26", "18%", ""] },
+            { name: "Gyproc Rawl Plug 8x45mm(100Nos/pkt)", values: ["", "746.77", "18%", ""] },
+            { name: "Gyproc Rawl Plug 8x60mm", values: ["", "523.04", "18%", ""] },
+            { name: "Gyproc Soffit Cleate(50Nos/Pkt)", values: ["", "184.33", "18%", ""] },
+            { name: "Gyproc Sofit Cleat", values: ["", "4.37", "18%", ""] },
+            { name: "GYproc  Starter Channel -.7x92x3660mm. GYPSTL+", values: ["", "", "18%", ""] },
+            { name: "Gyproc Stud 70x3660mm", values: ["", "306.85", "18%", ""] },
+            { name: "Gyproc Stud 92x3660mm", values: ["", "406.16", "18%", ""] },
+            { name: "Gyproc Supreme 68 One Coat Gyp.Plaster", values: ["", "154.01", "18%", ""] },
+            { name: "Gyproc Supreme 80 (NG) -25Kg", values: ["", "244.38", "18%", ""] },
+            { name: "Gyproc Truesteel Ceiling Angle-3660mm", values: ["", "67.92", "18%", ""] },
+            { name: "Gyproc True Steel Ceiling Section-3660mm", values: ["", "236.51", "18%", ""] },
+            { name: "Gyproc Truesteel Intermediate-3660mm.", values: ["", "223.86", "18%", ""] },
+            { name: "Gyproc Truesteel Parimeter-3660mm", values: ["", "144.43", "18%", ""] },
+            { name: "Gyproc Xpert  NG Gypsum Plaster", values: ["", "234.55", "18%", ""] },
+            { name: "Gyproc Xpert  NG Gypsum Plaster-25Kg", values: ["", "259.71", "18%", ""] },
+            { name: "Gypserra Floor Channel 148x3660mm", values: ["", "705.81", "18%", ""] },
+            { name: "Gypserra Stud 146x3660mm", values: ["", "807.8", "18%", ""] },
+            { name: "Gypsum Board MR  6'x4'x12.5mm", values: ["", "606.21", "18%", ""] },
+            { name: "Gypsum Board PL 6'x4'x12.5mm", values: ["", "374.83", "18%", ""] },
+            { name: "Gypsum Board PL-6'x4'x12mm.", values: ["", "351.12", "18%", ""] },
+            { name: "Gypsum Plaster (NG)", values: ["", "203.72", "18%", ""] },
+            { name: "Habito Board 1220x2440x12.5mm", values: ["", "2073.16", "18%", ""] },
+            { name: "Habito Board 8'x4'x12.5mm", values: ["", "2110", "18%", ""] },
+            { name: "Habito Screw-25mm", values: ["", "1509.29", "18%", ""] },
+            { name: "Hammer Pana-160mm", values: ["", "60", "18%", ""] },
+            { name: "Hilux Calcium Silicate Board 6'x4'x6mm", values: ["", "451.53", "18%", ""] },
+            { name: "Hilux Calcium Silicate Board 6'x4'x8mm", values: ["", "601.78", "18%", ""] },
+            { name: "Hilux Calcium Silicate Board 600x600x8mm", values: ["", "976.27", "18%", ""] },
+            { name: "Hilux Calcium Silicate Board 8'x4'x10mm", values: ["", "995.39", "18%", ""] },
+            { name: "Hilux Calcium Silicate Board 8'x4'x6mm", values: ["", "569.5", "18%", ""] },
+            { name: "Hilux Calcium Slicate 8'x4'x12mm", values: ["", "1203.3", "18%", ""] },
+            { name: "Hook Clip 2.5 J Wire Assembly", values: ["", "31", "18%", ""] },
+            { name: "HP R58GB 512GB 4GB", values: ["", "58898.3", "18%", ""] },
+            { name: "HSS Pana", values: ["", "159.39", "18%", ""] },
+            { name: "Intermediat-3660mm GypSerra", values: ["", "293.74", "18%", ""] },
+            { name: "Intermediate (GypsteelUltra)3660mm", values: ["", "227.65", "18%", ""] },
+            { name: "Jali Mesh-R", values: ["", "1700", "18%", ""] },
+            { name: "Jali Mesh-S", values: ["", "8.5", "18%", ""] },
+            { name: "Jointing Compound Easi-Fill Quick Set", values: ["", "523.81", "18%", ""] },
+            { name: "Jointing Compound Eisy Fill-20Kg", values: ["", "383.05", "18%", ""] },
+            { name: "Kanas 4", values: ["", "45", "18%", ""] },
+            { name: "L-315 G", values: ["", "790.5", "18%", ""] },
+            { name: "L 325 (50Kg Per Bag)", values: ["", "1252.5", "18%", ""] },
+            { name: "L 325 Grey 50Kg Per Bag (MYK MAKE)", values: ["", "1170", "18%", ""] },
+            { name: "L 325W/50KG PER BAG ( MYK MAKE)", values: ["", "1252.49", "18%", ""] },
+            { name: "L 335W (5okg Per Bag)", values: ["", "1698.76", "18%", ""] },
+            { name: "Main Runner -3000x15mm", values: ["", "80.75", "18%", ""] },
+            { name: "Main Runner -3000x24mm", values: ["", "72.29", "18%", ""] },
+            { name: "Metal To Metal Screw-25mm.", values: ["", "", "18%", ""] },
+            { name: "Metal To Metal Screw-60mm", values: ["", "311.34", "18%", ""] },
+            { name: "Metal To Metal Screw 6x13", values: ["", "", "18%", ""] },
+            { name: "Mineral Fiber Pinehole Tile-600x600x12mm.", values: ["", "100", "18%", ""] },
+            { name: "Moisture Barrier (17.4Sqm/PC)", values: ["", "256.61", "18%", ""] },
+            { name: "MYK 325 Hf-Glass Mosaic Adhesive White-50", values: ["", "1191.25", "18%", ""] },
+            { name: "Myk DWA 215 Thinset (20kg)", values: ["", "2128.77", "18%", ""] },
+            { name: "Patti-8Ft", values: ["", "45.33", "18%", ""] },
+            { name: "Perimer", values: ["", "2800", "18%", ""] },
+            { name: "Perimeter-3660mm GypSerra AZ150", values: ["", "179.13", "18%", ""] },
+            { name: "Perimeter 8Ft", values: ["", "29.74", "18%", ""] },
+            { name: "Pinhole Microlook 595x595x15mm.", values: ["", "114.7", "18%", ""] },
+            { name: "Pinhole Sq Tiles", values: ["", "91.96", "18%", ""] },
+            { name: "Primer", values: ["", "2800", "18%", ""] },
+            { name: "Pro1 Grid CT-1200mm", values: ["", "70.91", "18%", ""] },
+            { name: "Pro1 Grid CT-600mm", values: ["", "34.78", "18%", ""] },
+            { name: "Pro1 Grid MT-3000mm", values: ["", "175.99", "18%", ""] },
+            { name: "Pro1 Grid Wall Angle-3000mm", values: ["", "102", "18%", ""] },
+            { name: "Protop Ready Mix JC-10Kg", values: ["", "", "18%", ""] },
+            { name: "Providing & Making of GI Channel 75x20x12x2440mm", values: ["", "165", "18%", ""] },
+            { name: "Providing & Making of GI Channel 75x29x2440mm", values: ["", "165", "18%", ""] },
+            { name: "PU Silicon Gun", values: ["", "1050", "18%", ""] },
+            { name: "Pvc Gypsum Ceiling Tiles", values: ["", "50.27", "18%", ""] },
+            { name: "Pvc Gypsum Ceiling Tiles (P)", values: ["", "46.97", "18%", ""] },
+            { name: "Pvc Panel-3000mm.", values: ["", "114.96", "18%", ""] },
+            { name: "Pvc Rawl Plug", values: ["", "", "18%", ""] },
+            { name: "Pvc Tiles", values: ["", "52.55", "18%", ""] },
+            { name: "Rawal Plug-35mm", values: ["", "20", "18%", ""] },
+            { name: "Rawal Plug -50mm", values: ["", "25", "18%", ""] },
+            { name: "R.B.Glasswool16Kg/50mm", values: ["", "96.2", "18%", ""] },
+            { name: "Rigiroc Board 1220x2440x13mm", values: ["", "1507.7", "18%", ""] },
+            { name: "Rigitone Active Air (122066)1188x1980x12.5mm", values: ["", "4089.55", "18%", ""] },
+            { name: "Rigitone Active Air 8-18 1188x1998x12.5mm", values: ["", "4064.93", "18%", ""] },
+            { name: "Rockwool 48Kg/M3x50mm", values: ["", "155.89", "18%", ""] },
+            { name: "Safety Stud Anchor", values: ["", "12730.8", "18%", ""] },
+            { name: "Sand Microlook 15mm", values: ["", "114.4", "18%", ""] },
+            { name: "Self Adhesive Tape", values: ["", "55.55", "18%", ""] },
+            { name: "Shadowline Section", values: ["", "91.62", "18%", ""] },
+            { name: "Shadow Moulding", values: ["", "228.29", "18%", ""] },
+            { name: "Shera Plank Straight V-Cut", values: ["", "231.58", "18%", ""] },
+            { name: "Silicone Clear", values: ["", "135", "18%", ""] },
+            { name: "Single Primered STD Ceiling 595x595x4mm", values: ["", "117.34", "18%", ""] },
+            { name: "Sofit Cleat 30x37x1.6mm (50Nos/Pkt)", values: ["", "270.76", "18%", ""] },
+            { name: "Soundblock Board 1220x1830x12.5mm", values: ["", "1152.82", "18%", ""] },
+            { name: "Star Bit", values: ["", "45", "18%", ""] },
+            { name: "Stud 48x3660mm Gypserra Gyproc", values: ["", "349.25", "18%", ""] },
+            { name: "Stud 70x3050mm GypSerra", values: ["", "369.51", "18%", ""] },
+            { name: "Stud 70x3660mm GypSerra", values: ["", "390.26", "18%", ""] },
+            { name: "Stud 92x3660mm GypSerra", values: ["", "511.69", "18%", ""] },
+            { name: "Taparia Double Star Bit 10nos", values: ["", "450", "18%", ""] },
+            { name: "T- Glass", values: ["", "13375", "18%", ""] },
+            { name: "Tissue Paper", values: ["", "2.05", "18%", ""] },
+            { name: "Trap Door 1200x600", values: ["", "3340", "18%", ""] },
+            { name: "Trap Door 300x300mm", values: ["", "1261.62", "18%", ""] },
+            { name: "Trap Door 450X450mm.", values: ["", "1500.6", "18%", ""] },
+            { name: "Trap Door-600x600", values: ["", "1670", "18%", ""] },
+            { name: "Trap Door 600x900mm", values: ["", "3250", "18%", ""] },
+            { name: "USG Boral ST50 Ceiling Angle0.5x3660mm", values: ["", "38.3", "18%", ""] },
+            { name: "USG Boral ST50 Ceiling Section 0.5x3660mm", values: ["", "235.83", "18%", ""] },
+            { name: "USG Boral ST50 Perimeter0.5x3660mm", values: ["", "179.3", "18%", ""] },
+            { name: "Usg Boral Starfish Gyp Tiles", values: ["", "110.01", "18%", ""] },
+            { name: "Usg Main Runner-3600x15mm", values: ["", "204", "18%", ""] },
+            { name: "USG Olympia FLB 600x600x16mm", values: ["", "265.9", "18%", ""] },
+            { name: "USG Pin-FLB 600x600x16mm", values: ["", "200", "18%", ""] },
+            { name: "USG Pinhole 600x600x12mm", values: ["", "137.67", "18%", ""] },
+            { name: "USG Radar Flab 600x600x16mm", values: ["", "191.24", "18%", ""] },
+            { name: "Vario JT Filler (5 Kg)", values: ["", "440.95", "18%", ""] },
+            { name: "Wall Angle-3000x15mm", values: ["", "60.1", "18%", ""] },
+            { name: "Wall Angle-3000x24mm", values: ["", "60.1", "18%", ""] },
+            { name: "White Silloute Cross Tee-1200mm", values: ["", "110.06", "18%", ""] },
+            { name: "White Silloute Cross Tee-600mm", values: ["", "54.5", "18%", ""] },
+            { name: "White Silloutte Main Runner-10'", values: ["", "272", "18%", ""] }
+        ];
+
+        const searchInput = document.getElementById('product-search');
+        const suggestionsContainer = document.getElementById('suggestions');
+        const productDetails = document.getElementById('product-details');
+
+        function showSuggestions(value) {
+            const filteredProducts = products.filter(product => 
+                product.name.toLowerCase().includes(value.toLowerCase())
+            );
+
+            suggestionsContainer.innerHTML = '';
+            if (filteredProducts.length > 0 && value !== '') {
+                filteredProducts.forEach(product => {
+                    const suggestion = document.createElement('div');
+                    suggestion.classList.add('suggestion');
+                    suggestion.textContent = product.name;
+                    suggestion.onclick = () => displayProductDetails(product);
+                    suggestionsContainer.appendChild(suggestion);
+                });
+            }
+
+            // Special case: Redirect when "All Products" is typed
+            if (value.toLowerCase() === 'all') {
+                window.location.href = 'all-products.html';
+            }
+        }
+
+        function hideRow(rowId, value) {
+            const row = document.getElementById(rowId);
+            if (value === "") {
+                row.classList.add('hidden');
+            } else {
+                row.classList.remove('hidden');
+            }
+        }
+
+        function displayProductDetails(product) {
+            const [bundle, billRate, gstRate, cashRate] = product.values;
+
+            document.getElementById('product-name').textContent = product.name;
+            document.getElementById('bundle').textContent = bundle;
+            document.getElementById('bill-rate').textContent = billRate;
+            document.getElementById('gst-rate').textContent = gstRate;
+            document.getElementById('cash-rate').textContent = cashRate;
+
+            hideRow('bundle-row', bundle);
+            hideRow('bill-rate-row', billRate);
+            hideRow('gst-rate-row', gstRate);
+            hideRow('cash-rate-row', cashRate);
+
+            productDetails.style.display = 'block';
+
+            // Clear input field and reset focus
+            searchInput.value = '';
+            searchInput.focus();
+            suggestionsContainer.innerHTML = '';
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            showSuggestions(e.target.value);
+        });
+    </script>
+
+</body>
+</html>
