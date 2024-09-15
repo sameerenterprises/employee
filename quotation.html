@@ -166,7 +166,7 @@
                     total = (rate * quantity) + gstAmount;
                 }
 
-                items.push({ productName, quantity: quantity === 0 ? '' : quantity, rate: quantity === 0 ? '' : rate, gst, total });
+                items.push({ productName, quantity: quantity === 0 ? '' : quantity, rate, gst, total });
 
                 const tableBody = document.querySelector('#items-table tbody');
                 const row = document.createElement('tr');
