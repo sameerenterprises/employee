@@ -159,7 +159,8 @@
 
                 if (quantity === 0) {
                     // If quantity is 0, total is just the rate
-                    total = rate;
+                    const gstAmount = (rate * gst) / 100;
+                    total = rate + gstAmount;
                 } else {
                     const gstAmount = (rate * quantity * gst) / 100;
                     total = (rate * quantity) + gstAmount;
@@ -172,7 +173,7 @@
                 row.innerHTML = `
                     <td>${productName}</td>
                     <td>${quantity === 0 ? '' : quantity}</td>
-                    <td>${quantity === 0 ? '' : rate}</td>
+                    <td>${rate}</td>
                     <td>${gst}</td>
                     <td>${total.toFixed(2)}</td>
                 `;
