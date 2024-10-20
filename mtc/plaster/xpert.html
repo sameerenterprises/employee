@@ -111,8 +111,8 @@
             doc.text(':', 70, 110);
             doc.text(batchNumber, 100, 110);
 
-            const imgData = 'xpert.png'; // Replace with your Base64 image string or URL
-            doc.addImage(imgData, 'PNG', 10, 10, 100, 100); // Adjust position and size as needed
+            const xpertimg = 'xpert.png'; // Replace with your Base64 image string or URL
+            doc.addImage(xpertimg, 'PNG', 10, 10, 100, 100); // Adjust position and size as needed
             
             // Save the generated PDF
             doc.save(`${manufactureDate} ${batchNumber}.pdf`);
