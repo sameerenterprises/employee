@@ -90,29 +90,38 @@
             const formattedDate = formatDate(manufactureDate);
 
             // Title
-            const imgData = 'saint_gobain.png'; // Replace with your Base64 image string or URL
-            doc.addImage(imgData, 'PNG', 70, 20, 80, 40); // Adjust position and size as needed
-
-            doc.setFontSize(16);
+            const imgData = ''; // Replace with your Base64 image string or URL
+            doc.addImage(imgData, 'PNG', 70, 20, 40, 20); // Adjust position and size as needed
+            doc.setFontSize(10);
             doc.setFont('helvetica', 'bold');
-            doc.text('Material Test Certificate', 105, 70, { align: 'center' });
+            doc.text("Quality Assurance Report", 105, 45, {align: 'center'})
+            doc.text("Wada Laboratory", 105, 50, {align: 'center'})
+
+            doc.setFontSize(12);
+            doc.text('To Whomsoever it may concern', 105, 65, { align: 'center' });
+            doc.line(75, 66, 135, 66);
 
             // Product Name, Manufacturing Date, Batch Number
-            doc.setFontSize(12);
-            doc.text('Product Name', 20, 90);
-            doc.text(':', 70, 90);
-            doc.text('Gyproc Bond It', 100, 90);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Product Name', 20, 80);
+            doc.text(':', 98, 80);
+            doc.text('Xpert+', 100, 80);
             
-            doc.text(`Manufacturing Date`, 20, 100);
-            doc.text(':', 70, 100);
-            doc.text(formattedDate, 100, 100);
+            doc.text(`Manufacturing Date`, 20, 88);
+            doc.text(':', 98, 88);
+            doc.text(formattedDate, 100, 88);
             
-            doc.text(`Batch Number`, 20, 110);
-            doc.text(':', 70, 110);
-            doc.text(batchNumber, 100, 110);
+            doc.text(`Product on Tested`, 20, 96);
+            doc.text(':', 98, 96);
+            doc.text(formattedDate, 100, 96);
+            
+            doc.text(`Product Code & Batch No.`, 20, 104);
+            doc.text(':', 98, 104);
+            doc.text(batchNumber, 100, 104);
 
-            const xpertimg = 'xpert.png'; // Replace with your Base64 image string or URL
-            doc.addImage(xpertimg, 'PNG', 10, 120, 200, 200); // Adjust position and size as needed
+            const xpertimg = ''; // Replace with your Base64 image string or URL
+            doc.addImage(xpertimg, 'PNG', 0, 120, 200, 200); // Adjust position and size as needed
             
             // Save the generated PDF
             doc.save(`${manufactureDate} ${batchNumber}.pdf`);
