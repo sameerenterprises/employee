@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Material Test Certificate PDF Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.21/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        input {
+            padding: 10px;
+            margin-top: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Material Test Certificate</h1>
+        <form id="certificateForm">
+            <label for="batchNumber">Batch Number:</label>
+            <input type="text" id="batchNumber" required><br><br>
+           
+            <label for="manufactureDate">Manufacturing Date:</label>
+            <input type="date" id="manufactureDate" required><br><br>
+           
+            <button type="button" onclick="generatePDF()">Generate PDF</button>
+        </form>
+    </div>
+
+    <script>
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+
+            // Create a new jsPDF document with A4 size
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            let batchNumber = document.getElementById('batchNumber').value;
+            let manufactureDate = document.getElementById('manufactureDate').value;
+
+            if (!batchNumber || !manufactureDate) {
+                alert('Please enter all the details');
+                return;
+            }
+
+            // Convert the input date to the desired format
+            const formattedDate = formatDate(manufactureDate);
+
+            // Title
+            doc.setFontSize(22);
+            doc.text('Saint-Gobain', 105, 20, { align: 'center' });
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Material Test Certificate', 105, 70, { align: 'center' });
+
+            // Product Name, Manufacturing Date, Batch Number
+            doc.setFontSize(12);
+            doc.text('Product Name', 20, 90);
+            doc.text(':', 70, 90);
+            doc.text('Gyproc Bond It', 100, 90);
+            
+            doc.text(`Manufacturing Date`, 20, 100);
+            doc.text(':', 70, 100);
+            doc.text(formattedDate, 100, 100);
+            
+            doc.text(`Batch Number`, 20, 110);
+            doc.text(':', 70, 110);
+            doc.text(batchNumber, 100, 110);
+
+            // Table data using autoTable
+            doc.setFontSize(14);
+            doc.autoTable({
+                margin: { left: 20 }, // Center the table horizontally
+                startY: 120, // Starting position for the table
+                columnStyles: {
+                    0: { cellWidth: 50, halign: 'center', lineColor: [0, 0, 0] }, // Center align first column
+                    1: { cellWidth: 40, halign: 'center', lineColor: [0, 0, 0] }, // Center align second column
+                    2: { cellWidth: 30, halign: 'center', lineColor: [0, 0, 0] }, // Center align third column
+                },
+                body: [
+                    ['', 'Specifications', 'Result'],
+                    ['Batch Quantity', '---------', '700 Kg'],
+                    ['pH', '8.0 - 10.0', '8.97'],
+                    ['Density', '1.15 - 1.45', '1.36'],
+                    ['Solids Content', '58 - 65 %', '62.2%'],
+                    ['Appearance', 'Green', 'Green'],
+                ],
+                theme: 'grid',
+                bodyStyles: {
+                    textColor: [0, 0, 0],     // Black font color for body
+                    fontSize: 12,
+                },
+                tableLineColor: [0, 0, 0],   // Black border color for the table
+            });
+            
+            // Footer
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            doc.text('We confirm that the material above has been tested and inspected', 20, 185);
+            doc.text('by Quality Control Department of Saint Gobain India Pvt. Ltd.', 20, 190);
+            doc.text('and are within specification limit.', 20, 195);
+
+            doc.setFont('helvetica', 'bold');
+            doc.text('Senior Executive', 20, 210);
+            doc.text('For Saint Gobain India Pvt. Ltd (Wada).', 20, 215);
+            doc.text('P.S.: This is a computer generated document and does not require', 20, 230);
+            doc.text('a signature/stamp.', 20, 235);
+
+            // P.S. Section
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.text('Doc. No.: QAD-F-37/Effective Date: 1st Jan 2017/Rev no.: 04/Page no.1 of 1', 105, 250, { align: 'center' });
+
+            // Save the generated PDF
+            doc.save(`${manufactureDate} ${batchNumber}.pdf`);
+        }
+
+        // Function to format date to dd-mm-yy
+        function formatDate(inputDate) {
+            const date = new Date(inputDate);
+            const options = { day: '2-digit', month: 'short', year: '2-digit' };
+            return date.toLocaleDateString('en-GB', options).replace(',', '-'); // format to dd-mm-yy
+        }
+    </script>
+</body>
+</html>
