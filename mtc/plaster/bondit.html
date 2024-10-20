@@ -90,8 +90,9 @@
             const formattedDate = formatDate(manufactureDate);
 
             // Title
-            doc.setFontSize(22);
-            doc.text('Saint-Gobain', 105, 20, { align: 'center' });
+            const imgData = 'employee/mtc/saint_gobain.png'; // Replace with your Base64 image string or URL
+            doc.addImage(imgData, 'PNG', 10, 10, 50, 20); // Adjust position and size as needed
+
             doc.setFontSize(16);
             doc.setFont('helvetica', 'bold');
             doc.text('Material Test Certificate', 105, 70, { align: 'center' });
