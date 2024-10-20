@@ -91,7 +91,7 @@
 
             // Title
             const imgData = 'saint_gobain.png'; // Replace with your Base64 image string or URL
-            doc.addImage(imgData, 'PNG', 70, 20, 40, 20); // Adjust position and size as needed
+            doc.addImage(imgData, 'PNG', 90, 20, 40, 20); // Adjust position and size as needed
             doc.setFontSize(10);
             doc.setFont('helvetica', 'bold');
             doc.text("Quality Assurance Report", 105, 45, {align: 'center'})
@@ -121,7 +121,7 @@
             doc.text(batchNumber, 100, 104);
 
             const xpertimg = 'xpert.png'; // Replace with your Base64 image string or URL
-            doc.addImage(xpertimg, 'PNG', 0, 120, 200, 200); // Adjust position and size as needed
+            doc.addImage(xpertimg, 'PNG', 0, 110, 210, 200); // Adjust position and size as needed
             
             // Save the generated PDF
             doc.save(`${manufactureDate} ${batchNumber}.pdf`);
