@@ -91,7 +91,7 @@
 
             // Title
             const imgData = 'saint_gobain.png'; // Replace with your Base64 image string or URL
-            doc.addImage(imgData, 'PNG', 80, 20, 40, 20); // Adjust position and size as needed
+            doc.addImage(imgData, 'PNG', 85, 20, 40, 20); // Adjust position and size as needed
             doc.setFontSize(10);
             doc.setFont('helvetica', 'bold');
             doc.text("Quality Assurance Report", 105, 45, {align: 'center'})
@@ -121,7 +121,7 @@
             doc.text(batchNumber, 100, 104);
 
             const xpertimg = 'xpert.png'; // Replace with your Base64 image string or URL
-            doc.addImage(xpertimg, 'PNG', 0, 110, 210, 200); // Adjust position and size as needed
+            doc.addImage(xpertimg, 'PNG', 0, 110, 210, 180); // Adjust position and size as needed
             
             // Save the generated PDF
             doc.save(`${manufactureDate} ${batchNumber}.pdf`);
@@ -131,7 +131,7 @@
         function formatDate(inputDate) {
             const date = new Date(inputDate);
             const options = { day: '2-digit', month: 'short', year: '2-digit' };
-            return date.toLocaleDateString('en-GB', options).replace(',', '-'); // format to dd-mm-yy
+            return date.toLocaleDateString('en-GB', options).replace(',', '.'); // format to dd-mm-yy
         }
     </script>
 </body>
