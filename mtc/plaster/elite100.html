@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Material Test Certificate PDF Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.21/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        input {
+            padding: 10px;
+            margin-top: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Material Test Certificate</h1>
+        <form id="certificateForm">
+            <label for="batchNumber">Batch Number:</label>
+            <input type="text" id="batchNumber" required><br><br>
+           
+            <label for="manufactureDate">Manufacturing Date:</label>
+            <input type="date" id="manufactureDate" required><br><br>
+           
+            <button type="button" onclick="generatePDF()">Generate PDF</button>
+        </form>
+    </div>
+
+    <script>
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+
+            // Create a new jsPDF document with A4 size
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            let batchNumber = document.getElementById('batchNumber').value;
+            let manufactureDate = document.getElementById('manufactureDate').value;
+
+            if (!batchNumber || !manufactureDate) {
+                alert('Please enter all the details');
+                return;
+            }
+
+            // Convert the input date to the desired format
+            const formattedDate = formatDate(manufactureDate);
+
+            // Title
+            const imgData = 'saint_gobain.png'; // Replace with your Base64 image string or URL
+            doc.addImage(imgData, 'PNG', 85, 20, 40, 20); // Adjust position and size as needed
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text("Quality Assurance Report", 105, 45, {align: 'center'})
+            doc.text("Wada Laboratory", 105, 50, {align: 'center'})
+
+            doc.setFontSize(12);
+            doc.text('To Whomsoever it may concern', 105, 65, { align: 'center' });
+            doc.line(75, 66, 135, 66);
+
+            // Product Name, Manufacturing Date, Batch Number
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Product Name', 20, 80);
+            doc.text(':', 98, 80);
+            doc.text('Elite 100', 100, 80);
+            
+            doc.text(`Manufacturing Date`, 20, 88);
+            doc.text(':', 98, 88);
+            doc.text(formattedDate, 100, 88);
+            
+            doc.text(`Product on Tested`, 20, 96);
+            doc.text(':', 98, 96);
+            doc.text(formattedDate, 100, 96);
+            
+            doc.text(`Product Code & Batch No.`, 20, 104);
+            doc.text(':', 98, 104);
+            doc.text(batchNumber, 100, 104);
+
+            const eliteimg = 'elite.png'; // Replace with your Base64 image string or URL
+            doc.addImage(eliteimg, 'PNG', 0, 110, 210, 180); // Adjust position and size as needed
+            
+            // Save the generated PDF
+            doc.save(`${manufactureDate} ${batchNumber}.pdf`);
+        }
+
+        // Function to format date to dd-mm-yy
+        function formatDate(inputDate) {
+            const date = new Date(inputDate);
+            const options = { day: '2-digit', month: 'short', year: '2-digit' };
+            return date.toLocaleDateString('en-GB', options).replace(',', '.'); // format to dd-mm-yy
+        }
+    </script>
+</body>
+</html>
