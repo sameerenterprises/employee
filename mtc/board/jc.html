@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Material Test Certificate PDF Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.21/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        input {
+            padding: 10px;
+            margin-top: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Jointing Compound MTC</h1>
+        <form id="certificateForm">
+            <label for="batchNumber">Invoice Number:</label>
+            <input type="text" id="batchNumber" required><br><br>
+           
+            <label for="manufactureDate">Invoice Date:</label>
+            <input type="date" id="manufactureDate" required><br><br>
+
+            <label for="generatedate">MTC Generate Date:</label>
+            <input type="date" id="generatedate" required><br><br>
+           
+            <button type="button" onclick="generatePDF()">Generate PDF</button>
+        </form>
+    </div>
+
+    <script>
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+
+            // Create a new jsPDF document with A4 size
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            let batchNumber = document.getElementById('batchNumber').value;
+            let manufactureDate = document.getElementById('manufactureDate').value;
+
+            if (!batchNumber || !manufactureDate) {
+                alert('Please enter all the details');
+                return;
+            }
+
+            // Convert the input date to the desired format
+            const formattedDate = formatDate(manufactureDate);
+
+            // Title
+          
+            const jcmtc = 'jcmtc.png'; // Replace with your Base64 image string or URL
+            doc.addImage(jcmtc, 'PNG', 0, 0, 210, 200); // Adjust position and size as needed
+            
+            // Save the generated PDF
+            doc.save(`${batchNumber}.pdf`);
+        }
+
+        // Function to format date to dd-mm-yy
+        function formatDate(inputDate) {
+            const date = new Date(inputDate);
+            const options = { day: '2-digit', month: 'short', year: '2-digit' };
+            return date.toLocaleDateString('en-GB', options).replace(',', '.'); // format to dd-mm-yy
+        }
+    </script>
+</body>
+</html>
