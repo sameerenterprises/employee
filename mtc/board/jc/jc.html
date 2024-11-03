@@ -6,6 +6,8 @@
     <title>Material Test Certificate PDF Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.21/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,7 +18,6 @@
             height: 100vh;
             margin: 0;
         }
-
         .container {
             background-color: white;
             padding: 20px;
@@ -24,20 +25,18 @@
             border-radius: 8px;
             text-align: center;
         }
-
         label {
             display: block;
             font-weight: bold;
             margin-top: 10px;
         }
-
-        input {
+        textarea, input[type="text"], input[type="date"], input[type="datetime-local"] {
             padding: 10px;
             margin-top: 5px;
             width: 100%;
             box-sizing: border-box;
+            height: 40px;
         }
-
         button {
             background-color: #4CAF50;
             color: white;
@@ -47,7 +46,6 @@
             cursor: pointer;
             font-size: 16px;
         }
-
         button:hover {
             background-color: #45a049;
         }
@@ -58,23 +56,39 @@
         <h1>Jointing Compound MTC</h1>
         <form id="certificateForm">
             <label for="batchNumber">Invoice Number:</label>
-            <input type="text" id="batchNumber" required><br><br>
-           
+            <input type="text" id="batchNumber" placeholder="91XXXXXXXXX" maxlength="10" required>
+            <button type="button" onclick="generateInvoiceNumber()">Auto-Generate</button><br><br>
+
             <label for="manufactureDate">Invoice Date:</label>
             <input type="date" id="manufactureDate" required><br><br>
 
             <label for="generatedate">MTC Generate Date:</label>
-            <input type="date" id="generatedate" required><br><br>
-           
+            <input type="datetime-local" id="generatedate" required><br><br>
+
+            <label for="quantity">Quantity:</label>
+            <input type="text" id="quantity" placeholder="Enter quantity" required><br><br>
+
+            <label for="address">Address:</label>
+            <textarea id="address" required></textarea><br><br>
+
             <button type="button" onclick="generatePDF()">Generate PDF</button>
         </form>
     </div>
 
     <script>
-        function generatePDF() {
+        function generateInvoiceNumber() {
+            const randomNumber = Math.floor(Math.random() * 1000000000);
+            document.getElementById('batchNumber').value = "91" + randomNumber.toString().padStart(8, '0');
+        }
+
+        function generateMTCNumber() {
+            const randomNumber = Math.floor(Math.random() * 1000000000);
+            return "MTC" + randomNumber.toString().padStart(9, '0');
+        }
+
+        async function generatePDF() {
             const { jsPDF } = window.jspdf;
 
-            // Create a new jsPDF document with A4 size
             const doc = new jsPDF({
                 orientation: 'portrait',
                 unit: 'mm',
@@ -83,29 +97,97 @@
 
             let batchNumber = document.getElementById('batchNumber').value;
             let manufactureDate = document.getElementById('manufactureDate').value;
+            let address = document.getElementById('address').value;
+            let mtcNumber = generateMTCNumber();
+            let generatedate = document.getElementById('generatedate').value;
+            let quantity = document.getElementById('quantity').value;
 
-            if (!batchNumber || !manufactureDate) {
+            if (!batchNumber || !manufactureDate || !address || !quantity) {
                 alert('Please enter all the details');
                 return;
             }
 
-            // Convert the input date to the desired format
-            const formattedDate = formatDate(manufactureDate);
-
-            // Title
-          
             const jcmtc = 'jcmtc.png'; // Replace with your Base64 image string or URL
             doc.addImage(jcmtc, 'PNG', 0, 0, 210, 300); // Adjust position and size as needed
             
+            const formattedDate = formatDate(manufactureDate);
+            const headerdate = formatDate2(generatedate);
+            const footerdate=formatDate3(generatedate);
+
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`${headerdate}`, 10, 10);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${mtcNumber}`, 175, 38);
+
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${batchNumber}`, 176, 63);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`${formattedDate}`, 26, 68);
+            doc.setFontSize(6.4);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${footerdate}`, 68, 179);
+            doc.setFontSize(9);
+            doc.text(`QTY - ${quantity} (BAG)`, 174, 80);
+
+            // Format address with first line bold
+            const addressLines = address.split('\n');
+            const firstLine = addressLines[0];
+            const remainingLines = addressLines.slice(1);
+
+            // First line in bold
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text(firstLine, 14, 135);
+
+            // Remaining lines in normal font
+            doc.setFont('helvetica', 'normal');
+            remainingLines.forEach((line, index) => {
+                doc.text(line, 14, 135 + ((index + 1) * 6));
+            });
+
+            // Generate QR Code
+            const qrCodeDataUrl = await generateQRCode(mtcNumber);
+            doc.addImage(qrCodeDataUrl, 'PNG', 150, 160, 40, 40); // Add QR Code to PDF
+
             // Save the generated PDF
             doc.save(`${batchNumber}.pdf`);
         }
 
-        // Function to format date to dd-mm-yy
+        function generateQRCode(Number) {
+            return new Promise((resolve) => {
+                const link = `https://sameerenterprises.github.io/mtc/${Number}`;
+                const qrCodeCanvas = $('<canvas></canvas>')[0];
+                $(qrCodeCanvas).qrcode({
+                    width: 128,
+                    height: 128,
+                    text: link,
+                });
+
+                // Convert canvas to Data URL
+                const dataUrl = qrCodeCanvas.toDataURL('image/png');
+                resolve(dataUrl);
+            });
+        }
+
         function formatDate(inputDate) {
             const date = new Date(inputDate);
             const options = { day: '2-digit', month: 'short', year: '2-digit' };
-            return date.toLocaleDateString('en-GB', options).replace(',', '.'); // format to dd-mm-yy
+            return date.toLocaleDateString('en-GB', options)
+        }
+
+        function formatDate2(inputDate) {
+            const date = new Date(inputDate);
+            const options = {  month: '2-digit', day: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' };
+            return date.toLocaleString('en-US', options)
+        }
+
+        function formatDate3(inputDate) {
+            const date = new Date(inputDate);
+            const options = {  month: 'short', day: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' };
+            return date.toLocaleString('en-US', options)
         }
     </script>
 </body>
