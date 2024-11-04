@@ -118,8 +118,8 @@
                 startY: 120, // Starting position for the table
                 columnStyles: {
                     0: { cellWidth: 50, halign: 'center', lineColor: [0, 0, 0] }, // Center align first column
-                    1: { cellWidth: 40, halign: 'center', lineColor: [0, 0, 0] }, // Center align second column
-                    2: { cellWidth: 30, halign: 'center', lineColor: [0, 0, 0] }, // Center align third column
+                    1: { cellWidth: 50, halign: 'center', lineColor: [0, 0, 0] }, // Center align second column
+                    2: { cellWidth: 50, halign: 'center', lineColor: [0, 0, 0] }, // Center align third column
                 },
                 body: [
                     ['DESCIRPTION', 'RANGE', 'CONFORMITY'],
@@ -143,15 +143,15 @@
             // Footer
             doc.setFontSize(12);
             doc.setFont('helvetica', 'normal');
-            doc.text('We confirm that the material above has been tested and inspected', 20, 185);
-            doc.text('by Quality Control Department of Saint Gobain India Pvt. Ltd.', 20, 190);
-            doc.text('and are within specification limit.', 20, 195);
+            doc.text('We confirm that the material above has been tested and inspected', 20, 225);
+            doc.text('by Quality Control Department of Saint Gobain India Pvt. Ltd.', 20, 230);
+            doc.text('and are within specification limit.', 20, 235);
 
             doc.setFont('helvetica', 'bold');
-            doc.text('Senior Executive', 20, 210);
-            doc.text('For Saint Gobain India Pvt. Ltd', 20, 215);
-            doc.text('P.S.: This is a computer generated document and does not require', 20, 230);
-            doc.text('a signature/stamp.', 20, 235);
+            doc.text('Senior Executive', 20, 250);
+            doc.text('For Saint Gobain India Pvt. Ltd', 20, 255);
+            doc.text('P.S.: This is a computer generated document and does not require', 20, 260);
+            doc.text('a signature/stamp.', 20, 265);
 
             // P.S. Section
             doc.setFont('helvetica', 'normal');
