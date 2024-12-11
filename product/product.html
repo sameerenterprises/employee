@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .search-container {
+            max-width: 600px;
+            margin: auto;
+        }
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .suggestions {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+            background: #fff;
+        }
+        .suggestion-item:hover {
+            background: #f0f0f0;
+        }
+        .product-details {
+            margin-top: 20px;
+        }
+        .product-details img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <input 
+            type="text" 
+            id="searchBox" 
+            class="search-box" 
+            placeholder="Search for a product..."
+            oninput="showSuggestions()">
+        <div id="suggestions" class="suggestions"></div>
+        <div id="productDetails" class="product-details"></div>
+    </div>
+
+    <script>
+        const products = [
+            { name: "Apple iPhone 14", image: "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-16-pro-model-unselect-gallery-1-202409?wid=5120&hei=2880&fmt=webp&qlt=70&.v=aWs5czA5aDFXU0FlMGFGRlpYRXk2UWFRQXQ2R0JQTk5udUZxTkR3ZVlpTEJnOG9obkp6NERCS3lnVm1tcnlVUjBoUVhuTWlrY2hIK090ZGZZbk9HeE1xUVVnSHY5eU9CcGxDMkFhalkvT0NuWUpOMGpEMHVTZEtYYVA3c1B3UzVmbW94YnYxc1YvNXZ4emJGL0IxNFp3&traceId=1", description: "Latest Apple iPhone with advanced features." },
+            { name: "Gyproc Elite 100 Gypsum Plaster", image: "https://www.gyproc.in/images/elite-100.jpg", description: "Bag: 25Kg" },
+            { name: "Sony WH-1000XM5", image: "https://via.placeholder.com/200x150?text=Sony+Headphones", description: "Noise-cancelling wireless headphones." },
+            { name: "Dell XPS 13", image: "https://via.placeholder.com/200x150?text=Dell+XPS+13", description: "Premium ultrabook with sleek design." },
+            { name: "Apple Watch Series 8", image: "https://via.placeholder.com/200x150?text=Apple+Watch+8", description: "Smartwatch with health tracking features." },
+            { name: "Bose SoundLink", image: "https://via.placeholder.com/200x150?text=Bose+SoundLink", description: "Portable Bluetooth speaker with great sound." }
+        ];
+
+        function showSuggestions() {
+            const searchBox = document.getElementById("searchBox");
+            const suggestionsDiv = document.getElementById("suggestions");
+            const query = searchBox.value.toLowerCase();
+
+            // Clear previous suggestions
+            suggestionsDiv.innerHTML = "";
+
+            if (query === "") return;
+
+            const filteredProducts = products.filter(product => product.name.toLowerCase().includes(query));
+
+            filteredProducts.forEach(product => {
+                const suggestionItem = document.createElement("div");
+                suggestionItem.textContent = product.name;
+                suggestionItem.className = "suggestion-item";
+                suggestionItem.onclick = () => showProductDetails(product);
+                suggestionsDiv.appendChild(suggestionItem);
+            });
+        }
+
+        function showProductDetails(product) {
+            const productDetailsDiv = document.getElementById("productDetails");
+            const searchBox = document.getElementById("searchBox");
+            const suggestionsDiv = document.getElementById("suggestions");
+
+            // Display product details
+            productDetailsDiv.innerHTML = `
+                <h2>${product.name}</h2>
+                <img src="${product.image}" alt="${product.name}">
+                <p>${product.description}</p>
+            `;
+
+            // Clear the search bar and suggestions
+            searchBox.value = "";
+            suggestionsDiv.innerHTML = "";
+        }
+    </script>
+</body>
+</html>
