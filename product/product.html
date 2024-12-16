@@ -7,23 +7,38 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f9f9f9;
         }
         .search-container {
+            width: 90%;
             max-width: 600px;
-            margin: auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .search-box {
             width: 100%;
             padding: 10px;
             font-size: 16px;
             margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
         }
         .suggestions {
             border: 1px solid #ccc;
             border-radius: 5px;
             max-height: 200px;
             overflow-y: auto;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .suggestion-item {
             padding: 10px;
@@ -36,9 +51,25 @@
         .product-details {
             margin-top: 20px;
         }
-        .product-details img {
-            max-width: 100%;
-            height: auto;
+        .product-details h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.5em;
+        }
+        .product-details p {
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .search-container {
+                padding: 15px;
+            }
+            .search-box {
+                font-size: 14px;
+            }
+            .product-details h2 {
+                font-size: 1.2em;
+            }
         }
     </style>
 </head>
@@ -56,12 +87,54 @@
 
     <script>
         const products = [
-            { name: "Apple iPhone 14", image: "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-16-pro-model-unselect-gallery-1-202409?wid=5120&hei=2880&fmt=webp&qlt=70&.v=aWs5czA5aDFXU0FlMGFGRlpYRXk2UWFRQXQ2R0JQTk5udUZxTkR3ZVlpTEJnOG9obkp6NERCS3lnVm1tcnlVUjBoUVhuTWlrY2hIK090ZGZZbk9HeE1xUVVnSHY5eU9CcGxDMkFhalkvT0NuWUpOMGpEMHVTZEtYYVA3c1B3UzVmbW94YnYxc1YvNXZ4emJGL0IxNFp3&traceId=1", description: "Latest Apple iPhone with advanced features." },
-            { name: "Gyproc Elite 100 Gypsum Plaster", image: "https://www.gyproc.in/images/elite-100.jpg", description: "Bag: 25Kg" },
-            { name: "Sony WH-1000XM5", image: "https://via.placeholder.com/200x150?text=Sony+Headphones", description: "Noise-cancelling wireless headphones." },
-            { name: "Dell XPS 13", image: "https://via.placeholder.com/200x150?text=Dell+XPS+13", description: "Premium ultrabook with sleek design." },
-            { name: "Apple Watch Series 8", image: "https://via.placeholder.com/200x150?text=Apple+Watch+8", description: "Smartwatch with health tracking features." },
-            { name: "Bose SoundLink", image: "https://via.placeholder.com/200x150?text=Bose+SoundLink", description: "Portable Bluetooth speaker with great sound." }
+            { name: "", description: ""},
+            
+            { name: "Gypblock Board", description: "Size: 6'x4'x12.5mm \n Cash Price: 330"},
+            { name: "Gyproc Plain Board", description: "Size: 6'x4'x12.5mm \n Cash Price: 430"},
+            { name: "Gyproc MR Board", description: "Size: 6'x4'x12.5mm \n Cash Price: 870"},
+            { name: "Hilux Board", description: "Size: 6'x4'x8mm or 8x4x12mm \n Cash Price for 6'x4'x8mm: 750 \n Cash Price for 8'x4'x12mm: 1540"},
+            { name: "Everest FC Board", description: "Size: 6'x4'x6mm or 6'x4'x8mm or 8'x4'x12mm\n Cash Price for 6'x4'x6mm: 450 \n Cash Price for 6'x4'x8mm: 550 \n Cash Price for 8'x4'x12mm: 1720"},
+            { name: "Gyproc FR Board", description: "Size: 6'x4'x12.5mm \n Cash Price: 850"},
+            
+            
+            { name: "Patti", description: "Size: 8' \n Cash Price: 70-65"},
+            { name: "POP Patti", description: "Size: 8' \n Cash Price: 55-50"},
+            { name: "Xpert Patti", description: "Size: 8' or 12' \n Cash Price for 8': 130-125"},
+            { name: "Magnic Patti", description: "Size: 8' \n Cash Price: 105-100"},
+            { name: "Megastil Patti", description: "Size: 12' \n Cash Price: 310-300"},
+            { name: "Gypserra Patti", description: "Size: 12' \n Cash Price: 430-425"},
+            
+            { name: "Bottom", description: "Size: 8' \n Cash Price: 70-65"},
+            { name: "POP Bottom", description: "Size: 8' \n Cash Price: 55-50"},
+            { name: "Xpert Bottom", description: "Size: 8' or 12' \n Cash Price for 8': 130-125"},
+            { name: "Magnic Bottom", description: "Size: 8' \n Cash Price: 105-100"},
+            { name: "Megastil Bottom", description: "Size: 12' \n Cash Price: 310-300"},
+            { name: "Gypserra Bottom", description: "Size: 12' \n Cash Price: 430-425"},
+            
+            { name: "Perameter", description: "Size: 8' \n Cash Price: 45"},
+            { name: "Xpert Perameter", description: "Size: 8' or 12' \n Cash Price for 8': 95"},
+            { name: "Magnic Perameter", description: "Size: 8' \n Cash Price: 60"},
+            { name: "Megastil Perameter", description: "Size: 12' \n Cash Price: 195"},
+            { name: "Gypserra Perameter", description: "Size: 12' \n Cash Price: 280"},
+            
+            { name: "Al", description: "Size: 8' \n Cash Price: 25"},
+            { name: "Xpert Al", description: "Size: 8' or 12' \n Cash Price for 8': 50"},
+            { name: "Magnic Al", description: "Size: 8' \n Cash Price: 40"},
+            { name: "Megastil Al", description: "Size: 12' \n Cash Price: 95"},
+            { name: "Gypserra Al", description: "Size: 12' \n Cash Price: 150"},
+            
+            { name: "Floor Channel", description: "Size: 10' or 12' \n Cash Price for 10': 115-110 \n Cash Price for 12': 130-125"},
+            { name: "Xpert Floor Channel", description: "Size: 12' \n Cash Price: 260-255"},
+            
+            { name: "Stud", description: "Size: 8' or 12' \n Cash Price for 8': 105-100 \n Cash Price for 12': 160-155"},
+            { name: "Xpert Stud", description: "Size: 12' \n Cash Price: 270-265"},
+
+            { name: "Periwal Gypsum Plaster", description: "Bag: 18kg \n Cash Price: 160"},
+            { name: "Vita Plus Gypsum Plaster", description: "Bag: 20kg \n Setting: Fast \n GST Price: (200-195)+5% \n Cash Price: 200" },
+            { name: "Buildon Gypsum Plaster", description: "Bag: 20kg \n Cash Price: 200"},
+            { name: "ELite MR Gypsum Plaster", description: "Bag: 25kg \n Cash Price: 380"},
+            { name: "Gyproc Elite 100 Gypsum Plaster", description: "Bag: 25Kg \n Setting: 20-25min \n Cash Price: 340" },
+            { name: "Gyproc Xpert Gypsum Plaster", description: "Bag: 20kg or 25kg \n Setting: 10-12min \n Cash Price for 20kg: 240 \n Cash Price for 25kg: 300"}
         ];
 
         function showSuggestions() {
@@ -90,11 +163,13 @@
             const searchBox = document.getElementById("searchBox");
             const suggestionsDiv = document.getElementById("suggestions");
 
+            // Replace newline characters with <br> for multi-line descriptions
+            const formattedDescription = product.description.replace(/\n/g, "<br>");
+
             // Display product details
             productDetailsDiv.innerHTML = `
                 <h2>${product.name}</h2>
-                <img src="${product.image}" alt="${product.name}">
-                <p>${product.description}</p>
+                <p>${formattedDescription}</p>
             `;
 
             // Clear the search bar and suggestions
