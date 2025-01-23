@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product Calculation</title>
+  <title>Thermal Printer Bill</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,7 +12,7 @@
       padding: 0;
     }
     .container {
-      width: 80%;
+      width: 90%;
       margin: 0 auto;
       padding: 20px;
     }
@@ -21,14 +21,12 @@
     }
     input {
       padding: 10px;
-      margin: 10px;
+      margin: 10px 0;
       border-radius: 5px;
       border: 1px solid #ccc;
       width: calc(100% - 22px);
     }
     .input-group {
-      display: flex;
-      flex-direction: column;
       margin-bottom: 20px;
     }
     #outputTable {
@@ -40,67 +38,39 @@
       border: 1px solid #ddd;
       padding: 8px;
       text-align: left;
+      word-wrap: break-word;
+      white-space: normal;
     }
     #outputTable th {
-      background-color: #f2f2f2;
-    }
-    #totalOutput {
-      font-size: 1.2em;
-      font-weight: bold;
-      margin-top: 10px;
-    }
-    #productChart {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    #productChart th, #productChart td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-    }
-    #productChart th {
       background-color: #f2f2f2;
     }
   </style>
 </head>
 <body>
-
   <div class="container">
-    <h1>Product Calculation</h1>
+    <h1>Thermal Printer Bill</h1>
 
+    <!-- Table Section -->
     <table id="outputTable">
       <thead>
         <tr>
           <th>Product Name</th>
           <th>Quantity</th>
-          <th>Rate</th>
-          <th>Discount</th>
-          <th>Net Rate</th>
-          <th>Total</th>
+          <th>Rate (₹)</th>
+          <th>Total (₹)</th>
         </tr>
       </thead>
       <tbody id="output"></tbody>
     </table>
 
+    <!-- Input Section -->
     <div class="input-group">
-      <input type="text" id="productInput" placeholder="Type product code (Q P R D format)" onkeydown="handleEnter(event)">
+      <input type="text" id="productInput" placeholder="Type product code (QPA format)" onkeydown="handleEnter(event)">
+      <button onclick="generateImprovedPDF()">Generate PDF</button>
     </div>
-
-    <h2>Product Code Reference</h2>
-    <table id="productChart">
-      <thead>
-        <tr>
-          <th>Product Code</th>
-          <th>Product Name</th>
-          <th>Unit</th>
-          <th>Rate (₹)</th>
-        </tr>
-      </thead>
-      <tbody id="productChartBody"></tbody>
-    </table>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     const products = {
       "b": ["Gypblock Board 6'x4'x12mm", "nos", 330],
@@ -109,56 +79,29 @@
       "mpt": ["Magnic Ceiling Section 2440mm", "nos", 105],
       "xpt": ["Xpert Ceiling Section 2440mm", "nos", 130],
       "bt": ["Bottom 8'", "nos", 70],
-      "mbt": ["Magnic Intermediate 2440mm", "nos", 105],
-      "xpt": ["Xpert Intermediate 2440mm", "nos", 130],
       "pe": ["Perameter 8'", "nos", 45],
-      "mpe": ["Magnic Perameter 2440mm", "nos", 60],
-      "xpe": ["Xpert Perameter 2440mm", "nos", 95],
-      "al": ["AL 8'", "nos", 25],
-      "mal": ["Magnic Ceiling Angle 2440mm", "nos", 38],
-      "xal": ["Xpert Ceiling Angle 2440mm", "nos", 50],
       "xp": ["Gypsum Plaster", "bg", 160],
       "vp": ["Vita Gypsum Plaster", "bg", 200],
       "jc": ["Easi Fill Jointing Compound", "bg", 550],
-      "ds1": ["Drywall Screw 1inch 700 nos", "pkt", 200],
-      "ds1.5": ["Drywall Screw 1.5inch 500 nos", "pkt", 200],
-      "rp": ["Fasterner Rawl Plug 100 nos", "pkt", 300],
-      "ft": ["Fiber Tape", "roll", 100],
+      "l": ["Loading", "", 0],
+      "u": ["Unloading", "", 0],
+      "lu": ["Loading & Unloading", "", 0],
       "t": ["Transport", "", 0],
-      "l": ["Labour", "", 0]
     };
 
     let total = 0;
-    let totalDiscount = 0;
     let history = [];
 
     function addProduct() {
-      let input = document.getElementById("productInput").value.trim();
-
+      const input = document.getElementById("productInput").value.trim().replace(/ /g, '*');
       if (input === "c") {
         clearAll();
         return;
       }
 
-      if (input === "b") {
-        removeLastProduct();
-        return;
-      }
-
-      if (input === "t") {
-        calculateTotal();
-        return;
-      }
-
-      if (input === "p") {
-        generatePDF();
-        return;
-      }
-
-      const [quantity, productCode, rate, discount] = input.split(" ");
-      const q = parseInt(quantity);
-      const r = parseInt(rate);
-      const d = parseInt(discount) || 0;
+      const [quantityStr, productCode, amountStr] = input.split("*");
+      const quantity = quantityStr ? parseInt(quantityStr) : 10; // Default quantity is 10
+      const amount = amountStr ? parseInt(amountStr) : 0;
 
       if (!products[productCode]) {
         alert("Invalid product code!");
@@ -166,58 +109,73 @@
         return;
       }
 
-      const productDetails = products[productCode];
-      const productName = productDetails[0];
-      const unit = productDetails[1];
-      const pricePerUnit = r || productDetails[2];
-      const netRate = pricePerUnit - d;
-      const finalAmount = q * netRate;
-
-      total += finalAmount;
-      totalDiscount += d * q;
-      history.push({ name: productName, quantity: `${q} ${unit}`, pricePerUnit, discount: d, netRate, finalAmount });
-
-      updateTable();
-      clearInput();
-    }
-
-    function updateTable() {
-      const outputTableBody = document.getElementById("output");
-      outputTableBody.innerHTML = history.map(item => {
-        return `<tr>
-                  <td>${item.name}</td>
-                  <td>${item.quantity}</td>
-                  <td>₹${item.pricePerUnit}</td>
-                  <td>₹${item.discount}</td>
-                  <td>₹${item.netRate}</td>
-                  <td>₹${item.finalAmount}</td>
-                </tr>`;
-      }).join("");
-    }
-
-    function removeLastProduct() {
-      if (history.length === 0) {
-        alert("No items to remove!");
+      if (quantity === 0) {
+        removeProduct(productCode);
         clearInput();
         return;
       }
 
-      const lastItem = history.pop();
-      total -= lastItem.finalAmount;
-      totalDiscount -= lastItem.discount * parseInt(lastItem.quantity);
+      const productDetails = products[productCode];
+      const productName = productDetails[0];
+      const pricePerUnit = amount === 0 ? productDetails[2] : amount;
+      const displayQuantity = quantity > 1 ? `${quantity} nos` : ""; // Fixed quantity logic
+      const finalAmount = quantity * pricePerUnit;
 
-      updateTable();
+      const existingIndex = history.findIndex(item => item.code === productCode);
+      if (existingIndex !== -1) {
+        const existingItem = history[existingIndex];
+        total -= existingItem.finalAmount;
+        history[existingIndex] = { code: productCode, name: productName, quantity, displayQuantity, pricePerUnit, finalAmount };
+      } else {
+        history.push({ code: productCode, name: productName, quantity, displayQuantity, pricePerUnit, finalAmount });
+      }
+
+      total += finalAmount;
+
+      renderTable();
       clearInput();
     }
 
-    function calculateTotal() {
+    function removeProduct(productCode) {
+      const productIndex = history.findIndex(item => item.code === productCode);
+      if (productIndex === -1) {
+        alert("Product not found!");
+        return;
+      }
+
+      const removedItem = history.splice(productIndex, 1)[0];
+      total -= removedItem.finalAmount;
+
+      renderTable();
+    }
+
+    function renderTable() {
       const outputTableBody = document.getElementById("output");
-      const totalRow = `<tr>
-                          <td colspan="3"><strong></strong></td>
-                          <td><strong>Discount: ₹${totalDiscount}</strong></td>
-                          <td colspan="2"><strong>Total: ₹${total}</strong></td>
-                        </tr>`;
-      outputTableBody.insertAdjacentHTML('beforeend', totalRow);
+      outputTableBody.innerHTML = "";
+
+      history.forEach(item => {
+        const row = `
+          <tr>
+            <td>${item.name}</td>
+            <td>${item.displayQuantity}</td>
+            <td>₹${item.pricePerUnit}</td>
+            <td>₹${item.finalAmount}</td>
+          </tr>`;
+        outputTableBody.insertAdjacentHTML("beforeend", row);
+      });
+
+      const totalRow = `
+        <tr>
+          <td colspan="3" style="text-align: right; font-weight: bold;">Total</td>
+          <td style="font-weight: bold;">₹${total}</td>
+        </tr>`;
+      outputTableBody.insertAdjacentHTML("beforeend", totalRow);
+    }
+
+    function clearAll() {
+      total = 0;
+      history = [];
+      document.getElementById("output").innerHTML = "";
     }
 
     function clearInput() {
@@ -226,23 +184,46 @@
       input.focus();
     }
 
-    function clearAll() {
-      total = 0;
-      totalDiscount = 0;
-      history = [];
-      document.getElementById("output").innerHTML = "";
-    }
+    async function generateImprovedPDF() {
+      const { jsPDF } = window.jspdf;
 
-    function generatePDF() {
-      const pdfContent = history.map(item => `${item.name} - ${item.quantity} - ₹${item.pricePerUnit} - ₹${item.discount} - ₹${item.netRate} - ₹${item.finalAmount}`).join("\n");
-      const totalContent = `Total Discount: ₹${totalDiscount}\nTotal Amount: ₹${total}`;
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: [80, 150 + history.length * 10],
+      });
 
-      const fullContent = `${pdfContent}\n\n${totalContent}`;
-      const blob = new Blob([fullContent], { type: "text/plain" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "ThermalPrinterOutput.txt";
-      link.click();
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text("SAMPLE BILL", 40, 10, { align: "center" });
+      doc.text(".......................", 40, 11, { align: "center" });
+      
+      doc.setFontSize(8);
+      doc.text(`Date: ${new Date().toLocaleDateString()}`, 2, 18);
+
+      let y = 25;
+      doc.setFontSize(8);
+      doc.text("Product Name", 2, y);
+      doc.text("Qty", 45, y);
+      doc.text("Rate", 60, y);
+      doc.text("Total", 70, y);
+      doc.text("................................................................................................", 2, y + 1.2);
+
+      history.forEach(item => {
+        y += 5;
+        doc.text(item.name, 2, y);
+        doc.text(item.displayQuantity, 45, y);
+        doc.text(`${item.pricePerUnit}`, 60, y);
+        doc.text(`${item.finalAmount}`, 70, y);
+      });
+
+      y += 5;
+      doc.text("................................................................................................", 2, y - 3.2);
+      doc.setFont("helvetica", "bold");
+      doc.text("Total", 60, y);
+      doc.text(`${total}`, 70, y);
+
+      doc.save("Thermal_Printer_Bill.pdf");
     }
 
     function handleEnter(event) {
@@ -250,19 +231,6 @@
         addProduct();
       }
     }
-
-    window.onload = function() {
-      const productChartBody = document.getElementById('productChartBody');
-      const productRows = Object.entries(products).map(([code, details]) => {
-        return `<tr>
-                  <td>${code}</td>
-                  <td>${details[0]}</td>
-                  <td>${details[1]}</td>
-                  <td>₹${details[2]}</td>
-                </tr>`;
-      }).join("");
-      productChartBody.innerHTML = productRows;
-    };
   </script>
 </body>
 </html>
