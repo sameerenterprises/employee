@@ -73,20 +73,20 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     const products = {
-      "b": ["Gypblock Board 6'x4'x12mm", "nos", 330],
-      "ib": ["Gypsum Board 6'x4'x12.5mm", "nos", 430],
-      "pt": ["Patti 8'", "nos", 70],
-      "mpt": ["Magnic Ceiling Section 2440mm", "nos", 105],
-      "xpt": ["Xpert Ceiling Section 2440mm", "nos", 130],
-      "bt": ["Bottom 8'", "nos", 70],
-      "pe": ["Perameter 8'", "nos", 45],
-      "xp": ["Gypsum Plaster", "bg", 160],
-      "vp": ["Vita Gypsum Plaster", "bg", 200],
-      "jc": ["Easi Fill Jointing Compound", "bg", 550],
-      "l": ["Loading", "", 0],
-      "u": ["Unloading", "", 0],
-      "lu": ["Loading & Unloading", "", 0],
-      "t": ["Transport", "", 0],
+      "b": ["GYPBLOCK BOARD 6'x4'x12mm", "nos", 330],
+      "ib": ["GYPSUM BOARD 6'x4'x12.5mm", "nos", 430],
+      "pt": ["PATTI 8'", "nos", 70],
+      "mpt": ["MAGNIC PATTI 2440mm", "nos", 105],
+      "xpt": ["XPERT PATTI 2440mm", "nos", 130],
+      "bt": ["BOTTOM 8'", "nos", 70],
+      "pe": ["PERIMETER 8'", "nos", 45],
+      "gp": ["GYPSUM PLASTER", "bg", 160],
+      "vp": ["VITA GYPSUM PLASTER", "bg", 200],
+      "jc": ["JOINTIONG COMPOUND", "bg", 550],
+      "l": ["LOADING", "", 0],
+      "u": ["UNLOADING", "", 0],
+      "lu": ["LOADING & UNLOADING", "", 0],
+      "t": ["TRANSPORT", "", 0],
     };
 
     let total = 0;
@@ -197,31 +197,34 @@
       doc.setFont("helvetica", "bold");
       doc.text("SAMPLE BILL", 40, 10, { align: "center" });
       doc.text(".......................", 40, 11, { align: "center" });
-      
+
       doc.setFontSize(8);
-      doc.text(`Date: ${new Date().toLocaleDateString()}`, 2, 18);
+      doc.text(`Date: ${new Date().toLocaleDateString()}`, 1, 18);
 
       let y = 25;
       doc.setFontSize(8);
-      doc.text("Product Name", 2, y);
-      doc.text("Qty", 45, y);
+      doc.text("Product Name", 1, y);
+      doc.text("Qty", 47, y);
       doc.text("Rate", 60, y);
       doc.text("Total", 70, y);
-      doc.text("................................................................................................", 2, y + 1.2);
+      doc.text("..........................................................................................................", 0, y + 1.2);
 
       history.forEach(item => {
         y += 5;
-        doc.text(item.name, 2, y);
-        doc.text(item.displayQuantity, 45, y);
+        doc.text(item.name, 1, y);
+        doc.text(item.displayQuantity, 47, y);
         doc.text(`${item.pricePerUnit}`, 60, y);
         doc.text(`${item.finalAmount}`, 70, y);
       });
 
       y += 5;
-      doc.text("................................................................................................", 2, y - 3.2);
+      doc.text("..........................................................................................................", 0, y - 3.2);
       doc.setFont("helvetica", "bold");
       doc.text("Total", 60, y);
       doc.text(`${total}`, 70, y);
+     
+      doc.text("..........................................................................................................", 0, y + 7);
+
 
       doc.save("Thermal_Printer_Bill.pdf");
     }
