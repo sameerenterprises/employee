@@ -71,6 +71,7 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
   <script>
     const products = {
       "b": ["Gypblock Board 6'x4'x12mm", "nos", 330],
@@ -228,11 +229,27 @@
       doc.setFontSize(10);
       doc.text("Contact Number: 9022405221", 40, y+8, { align: "center" });
       
-      doc.text("..........................................................................................................", 0, y + 12);
+      // Generate QR code
+      const qr = new QRious({
+        value: `upi://pay?pa=sameerayubchoudhary-1@okhdfcbank&pn=Sameer%20Choudhari&am=${total}&cu=INR`,
+        size: 80,
+      });
 
-
+      // Add QR code to PDF
+      const qrDataURL = qr.toDataURL();
+      y += 15;
+      doc.addImage(qrDataURL, "PNG", 20, y, 40, 40);
+      
+      doc.text("..........................................................................................................", 0, y + 45);
+      
       doc.save("Thermal_Printer_Bill.pdf");
     }
+    
+    function clearInput() {
+      document.getElementById("productInput").value = "";
+      document.getElementById("productInput").focus();
+    }
+
 
     function handleEnter(event) {
       if (event.key === "Enter") {
