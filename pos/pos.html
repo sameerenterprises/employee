@@ -29,20 +29,27 @@
     .input-group {
       margin-bottom: 20px;
     }
-    #outputTable {
+    #outputTable, #productReferenceTable {
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 20px;
     }
-    #outputTable th, #outputTable td {
+    #outputTable th, #outputTable td, #productReferenceTable th, #productReferenceTable td {
       border: 1px solid #ddd;
       padding: 8px;
       text-align: left;
       word-wrap: break-word;
       white-space: normal;
     }
-    #outputTable th {
+    #outputTable th, #productReferenceTable th {
       background-color: #f2f2f2;
+    }
+    .reference-container {
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
   </style>
 </head>
@@ -74,12 +81,29 @@
     </div>
   </div>
 
+    <!-- Product Reference Section -->
+    <div class="reference-container">
+      <h2>Product Reference</h2>
+      <table id="productReferenceTable">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Product Name</th>
+            <th>Unit</th>
+            <th>Price (₹)</th>
+          </tr>
+        </thead>
+        <tbody id="productReference"></tbody>
+      </table>
+    </div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
   <script>
     const products = {
-      "b": ["Gypblock Board 6'x4'x12mm", "nos", 330],
-      "ib": ["Gypsum Board 6'x4'x12.5mm", "nos", 430],
+      "b": ["Gypblock Board 6x4x12mm", "nos", 330],
+      "ib": ["Gypsum Board 6x4x12.5mm", "nos", 430],
       
       "pt": ["Patti 8'", "nos", 70],
       "mpt": ["Magnic Patti 2440mm", "nos", 105],
@@ -107,6 +131,24 @@
       "lu": ["Loading & Unloading", "", 0],
       "t": ["Transport", "", 0],
     };
+    
+    // Populate product reference table
+    function populateProductReference() {
+      const referenceTableBody = document.getElementById("productReference");
+      for (const code in products) {
+        const [name, unit, price] = products[code];
+        const row = `
+          <tr>
+            <td>${code}</td>
+            <td>${name}</td>
+            <td>${unit}</td>
+            <td>₹${price}</td>
+          </tr>`;
+        referenceTableBody.insertAdjacentHTML("beforeend", row);
+      }
+    }
+    
+    populateProductReference();
 
     let total = 0;
     let history = [];
@@ -249,20 +291,9 @@
       doc.setFontSize(10);
       doc.text("Contact Number: 9022405221", 40, y+8, { align: "center" });
       
-      // Generate QR code
-      const qr = new QRious({
-        value: `upi://pay?pa=sflenterprises1@oksbi&pn=SFL%20Enterprises&am=${total}&cu=INR`,
-        size: 80,
-      });
-
-      // Add QR code to PDF
-      const qrDataURL = qr.toDataURL();
-      y += 10;
-      doc.addImage(qrDataURL, "PNG", 10, y, 60, 60);
+      doc.text("..........................................................................................................", 0, y + 15);
       
-      doc.text("..........................................................................................................", 0, y + 65);
-      
-      y += 65;
+      y += 15;
       
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
@@ -299,7 +330,18 @@
       doc.text("__________________________________________________________________________________________________________", 0, y + 3.2);
       doc.setFontSize(10);
       
-      doc.text("..........................................................................................................", 0, y + 8);
+      // Generate QR code
+      const qr = new QRious({
+        value: `upi://pay?pa=sflenterprises1@oksbi&pn=SFL%20Enterprises&am=${total}&cu=INR`,
+        size: 80,
+      });
+
+      // Add QR code to PDF
+      const qrDataURL = qr.toDataURL();
+      y += 8;
+      doc.addImage(qrDataURL, "PNG", 10, y, 60, 60);
+      
+      doc.text("..........................................................................................................", 0, y + 65);
       
       doc.save("Thermal_Printer_Bill.pdf");
     }
