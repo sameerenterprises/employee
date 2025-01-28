@@ -49,6 +49,10 @@
 <body>
   <div class="container">
     <h1>Thermal Printer Bill</h1>
+    
+    <div class="input-group">
+      <input type="text" id="partyInfo" placeholder="Party Information">
+    </div>
 
     <!-- Table Section -->
     <table id="outputTable">
@@ -76,14 +80,28 @@
     const products = {
       "b": ["Gypblock Board 6'x4'x12mm", "nos", 330],
       "ib": ["Gypsum Board 6'x4'x12.5mm", "nos", 430],
+      
       "pt": ["Patti 8'", "nos", 70],
       "mpt": ["Magnic Patti 2440mm", "nos", 105],
       "xpt": ["Xpert Patti 2440mm", "nos", 130],
+      
       "bt": ["Bottom 8'", "nos", 70],
+      "mbt": ["Magnic Bottom 2440mm", "nos", 105],
+      "xbt": ["Xpert Bottom 2440mm", "nos", 130],
+      
       "pe": ["Perimeter 8'", "nos", 45],
-      "gp": ["Gypsum Plaster", "bg", 160],
-      "vp": ["Vita Gypsum Plaster", "bg", 200],
+      "mpe": ["Magnic Perimeter 2440mm", "nos", 60],
+      "xpe": ["Xpert Perimeter 2440mm", "nos", 95],
+
+      "al": ["Al 8'", "nos", 25],
+      "mal": ["Magnic Al 2440mm", "nos", 40],
+      "xal": ["Xpert Al 2440mm", "nos", 50],
+      
+      "gp": ["Gypsum Plaster", "bg", 200],
       "jc": ["Jointing Compound", "bg", 550],
+
+      "ft": ["Fiber Tape", "roll", 100],
+      
       "l": ["Loading", "", 0],
       "u": ["Unloading", "", 0],
       "lu": ["Loading & Unloading", "", 0],
@@ -99,7 +117,7 @@
         clearAll();
         return;
       }
-
+      
       const [quantityStr, productCode, amountStr] = input.split("*");
       const quantity = quantityStr ? parseInt(quantityStr) : 10; // Default quantity is 10
       const amount = amountStr ? parseInt(amountStr) : 0;
@@ -187,11 +205,12 @@
 
     async function generateImprovedPDF() {
       const { jsPDF } = window.jspdf;
-
+      const party = document.getElementById("partyInfo").value.trim() || "";
+      
       const doc = new jsPDF({
         orientation: "portrait",
         unit: "mm",
-        format: [80, 150 + history.length * 10],
+        format: [80, 300 + history.length * 10],
       });
 
       doc.setFontSize(12);
@@ -200,9 +219,10 @@
       doc.text(".................", 40, 11, { align: "center" });
 
       doc.setFontSize(10);
-      doc.text(`Date: ${new Date().toLocaleDateString()}`, 1, 18);
+      doc.text(`Date: ${new Date().toLocaleDateString()}`, 50, 18);
+      doc.text(`Party Info: ${party}`, 1, 23);
 
-      let y = 25;
+      let y = 30;
       doc.setFontSize(10);
       doc.text("__________________________________________________________________________________________________________", 0, y - 4.5);
       doc.text("Product", 1, y);
@@ -231,7 +251,7 @@
       
       // Generate QR code
       const qr = new QRious({
-        value: `upi://pay?pa=sameerayubchoudhary-1@okhdfcbank&pn=Sameer%20Choudhari&am=${total}&cu=INR`,
+        value: `upi://pay?pa=sflenterprises1@oksbi&pn=SFL%20Enterprises&am=${total}&cu=INR`,
         size: 80,
       });
 
@@ -241,6 +261,45 @@
       doc.addImage(qrDataURL, "PNG", 10, y, 60, 60);
       
       doc.text("..........................................................................................................", 0, y + 65);
+      
+      y += 65;
+      
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("RECIEPT COPY", 40, y+10, { align: "center" });
+      doc.text("............................", 40, y+11, { align: "center" });
+      
+      doc.setFontSize(10);
+      doc.text(`Date: ${new Date().toLocaleDateString()}`, 50, y+18);
+      doc.text(`Party Info: ${party}`, 1, y+23);
+
+      y += 30;
+      doc.setFontSize(10);
+      doc.text("__________________________________________________________________________________________________________", 0, y - 4.5);
+      doc.text("Product", 1, y);
+      doc.text("Qty", 47, y);
+      doc.text("Rate", 60, y);
+      doc.text("Total", 70, y);
+      doc.text("__________________________________________________________________________________________________________", 0, y + 1.2);
+
+      history.forEach(item => {
+        y += 8;
+        doc.text(item.name, 1, y);
+        doc.text(item.displayQuantity, 47, y);
+        doc.text(`${item.pricePerUnit}`, 60, y);
+        doc.text(`${item.finalAmount}`, 70, y);
+      });
+
+      y += 8;
+      doc.text("__________________________________________________________________________________________________________", 0, y - 3.2);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text("Total", 1, y+1.5);
+      doc.text(`${total}`, 70, y+1.5);
+      doc.text("__________________________________________________________________________________________________________", 0, y + 3.2);
+      doc.setFontSize(10);
+      
+      doc.text("..........................................................................................................", 0, y + 8);
       
       doc.save("Thermal_Printer_Bill.pdf");
     }
