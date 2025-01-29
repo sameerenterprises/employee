@@ -102,30 +102,48 @@
   <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
   <script>
     const products = {
-      "b": ["Gypblock Board 6x4x12mm", "nos", 330],
-      "ib": ["Gypsum Board 6x4x12.5mm", "nos", 430],
+      "b": ["Gypsum Board 6x4x12.5mm", "nos", 330],
+      "ib": ["Gyproc Board 6x4x12.5mm", "nos", 430],
       
       "pt": ["Patti 8'", "nos", 70],
-      "mpt": ["Magnic Patti 2440mm", "nos", 105],
-      "xpt": ["Xpert Patti 2440mm", "nos", 130],
+      "mpt": ["Magnic Patti 8'", "nos", 105],
+      "xpt": ["Xpert Patti 8'", "nos", 130],
+      "gpt: ["Gypserra Patti 12', "nos", 430],
       
       "bt": ["Bottom 8'", "nos", 70],
-      "mbt": ["Magnic Bottom 2440mm", "nos", 105],
-      "xbt": ["Xpert Bottom 2440mm", "nos", 130],
+      "mbt": ["Magnic Bottom 8'", "nos", 105],
+      "xbt": ["Xpert Bottom 8'", "nos", 130],
+      "gbt: ["Gypserra Bottom 12', "nos", 430],
       
       "pe": ["Perimeter 8'", "nos", 45],
-      "mpe": ["Magnic Perimeter 2440mm", "nos", 60],
-      "xpe": ["Xpert Perimeter 2440mm", "nos", 95],
-
+      "mpe": ["Magnic Perimeter 8'", "nos", 60],
+      "xpe": ["Xpert Perimeter 8'", "nos", 95],
+      "gpe: ["Gypserra Perimeter 12', "nos", 280],
+        
       "al": ["Al 8'", "nos", 25],
-      "mal": ["Magnic Al 2440mm", "nos", 40],
-      "xal": ["Xpert Al 2440mm", "nos", 50],
+      "mal": ["Magnic Al 8'", "nos", 40],
+      "xal": ["Xpert Al 8'", "nos", 50],
+      "gal: ["Gypserra Al 12', "nos", 150],
       
       "gp": ["Gypsum Plaster", "bg", 200],
       "jc": ["Jointing Compound", "bg", 550],
 
       "ft": ["Fiber Tape", "roll", 100],
-      
+      "gft": ["Gyproc Fiber Tape", "roll", 230],
+      "gpt": ["Gyproc Paper Tape", "roll", 230],
+        
+      "sc": ["Drywall Screw 1inch", "box", 200],
+      "sc1.5": ["Drywall Screw 1.5inch", "box", 200],
+      "gsc": ["Gyproc Screw 1inch", "box", 600],
+      "gsc1.5": ["Gyproc Screw 1.5inch", "box", 380],
+
+      "gsd": ["Gyproc Sadoline", "nos", 160],
+      "gab": ["Gyproc Angle Bead", "nos", 160],
+
+      "gbd": ["Gyproc Bondit", "kg", 160],
+      "ggp": ["Gyproc Gyplaster", "kg", 120],
+      "dcbd": ["DC Bond", "kg", 100],
+
       "l": ["Loading", "", 0],
       "u": ["Unloading", "", 0],
       "lu": ["Loading & Unloading", "", 0],
@@ -219,7 +237,7 @@
           <tr>
             <td>${item.name}</td>
             <td>${item.displayQuantity}</td>
-            <td>₹${item.pricePerUnit}</td>
+            <td>${item.quantity === 1 ? "" : `₹${item.pricePerUnit}`}</td>
             <td>₹${item.finalAmount}</td>
           </tr>`;
         outputTableBody.insertAdjacentHTML("beforeend", row);
@@ -262,7 +280,7 @@
 
       doc.setFontSize(10);
       doc.text(`Date: ${new Date().toLocaleDateString()}`, 50, 18);
-      doc.text(`Party Info: ${party}`, 1, 23);
+      doc.text(`Party: ${party}`, 1, 23);
 
       let y = 30;
       doc.setFontSize(10);
@@ -277,7 +295,7 @@
         y += 8;
         doc.text(item.name, 1, y);
         doc.text(item.displayQuantity, 47, y);
-        doc.text(`${item.pricePerUnit}`, 60, y);
+        doc.text(item.quantity === 1 ? "" : `${item.pricePerUnit}`, 60, y);
         doc.text(`${item.finalAmount}`, 70, y);
       });
 
@@ -302,7 +320,7 @@
       
       doc.setFontSize(10);
       doc.text(`Date: ${new Date().toLocaleDateString()}`, 50, y+18);
-      doc.text(`Party Info: ${party}`, 1, y+23);
+      doc.text(`Party: ${party}`, 1, y+23);
 
       y += 30;
       doc.setFontSize(10);
@@ -317,7 +335,7 @@
         y += 8;
         doc.text(item.name, 1, y);
         doc.text(item.displayQuantity, 47, y);
-        doc.text(`${item.pricePerUnit}`, 60, y);
+        doc.text(item.quantity === 1 ? "" : `${item.pricePerUnit}`, 60, y);
         doc.text(`${item.finalAmount}`, 70, y);
       });
 
