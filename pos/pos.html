@@ -333,42 +333,43 @@
       
       doc.text("..........................................................................................................", 0, y + 20);
       
-    //   y += 15;
+      y += 20;
       
-    //   doc.setFontSize(12);
-    //   doc.setFont("helvetica", "bold");
-    //   doc.text("RECIEPT COPY", 40, y+10, { align: "center" });
-    //   doc.text("............................", 40, y+11, { align: "center" });
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("RECIEPT COPY", 40, y+10, { align: "center" });
+      doc.text("............................", 40, y+11, { align: "center" });
       
-    //   doc.setFontSize(10);
-    //   doc.text(`Date: ${new Date().toLocaleDateString()}`, 50, y+18);
-    //   doc.text(`Party: ${party}`, 1, y+23);
+      doc.setFontSize(10);
+      doc.text(`Date: ${new Date().toLocaleDateString()}`, 50, y+18);
+      doc.text(`Time: ${formattedTime}`, 50, y+23);
+      doc.text(`Info: ${party}`, 1, y+28);
 
-    //   y += 30;
-    //   doc.setFontSize(10);
-    //   doc.text("__________________________________________________________________________________________________________", 0, y - 4.5);
-    //   doc.text("Product", 1, y);
-    //   doc.text("Qty", 47, y);
-    //   doc.text("Rate", 60, y);
-    //   doc.text("Total", 70, y);
-    //   doc.text("__________________________________________________________________________________________________________", 0, y + 1.2);
+      y += 35;
+      doc.setFontSize(10);
+      doc.text("__________________________________________________________________________________________________________", 0, y - 4.5);
+      doc.text("Product", 1, y);
+      doc.text("Qty", 47, y);
+      doc.text("Rate", 60, y);
+      doc.text("Total", 70, y);
+      doc.text("__________________________________________________________________________________________________________", 0, y + 1.2);
 
-    //   history.forEach(item => {
-    //     y += 8;
-    //     doc.text(item.name, 1, y);
-    //     doc.text(item.displayQuantity, 47, y);
-    //     doc.text(item.quantity === 1 ? "" : `${item.pricePerUnit}`, 60, y);
-    //     doc.text(`${item.finalAmount}`, 70, y);
-    //   });
+      history.forEach(item => {
+        y += 8;
+        doc.text(item.name, 1, y);
+        doc.text(item.displayQuantity, 47, y);
+        doc.text(item.quantity === 1 ? "" : `${item.pricePerUnit}`, 60, y);
+        doc.text(`${item.finalAmount}`, 70, y);
+      });
 
-    //   y += 8;
-    //   doc.text("__________________________________________________________________________________________________________", 0, y - 3.2);
-    //   doc.setFont("helvetica", "bold");
-    //   doc.setFontSize(12);
-    //   doc.text("Total", 1, y+1.5);
-    //   doc.text(`${total}`, 70, y+1.5);
-    //   doc.text("__________________________________________________________________________________________________________", 0, y + 3.2);
-    //   doc.setFontSize(10);
+      y += 8;
+      doc.text("__________________________________________________________________________________________________________", 0, y - 3.2);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text("Total", 1, y+1.5);
+      doc.text(`${total}`, 70, y+1.5);
+      doc.text("__________________________________________________________________________________________________________", 0, y + 3.2);
+      doc.setFontSize(10);
       
     //   // Generate QR code
     //   const qr = new QRious({
@@ -381,7 +382,7 @@
     //   y += 8;
     //   doc.addImage(qrDataURL, "PNG", 10, y, 60, 60);
       
-    //   doc.text("..........................................................................................................", 0, y + 65);
+      doc.text("..........................................................................................................", 0, y + 15);
       
       doc.save("Thermal_Printer_Bill.pdf");
     }
