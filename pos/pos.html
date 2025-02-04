@@ -108,19 +108,19 @@
       "hb8412": ["Hilux Board 8'4'12mm", "nos", 1540],
       "gmr": ["Gyproc MR 6'4'12.5mm", "nos", 870],
       "gfr": ["Gyproc FR 6'4'12.5mm", "nos", 850],
-      "e646": ["Everest Board 6'4'8mm", "nos", 450],
+      "e646": ["Everest Board 6'4'6mm", "nos", 450],
       "e648": ["Everest Board 6'4'8mm", "nos", 550],
       "e8412": ["Everest Board 8'4'12mm", "nos", 1720],
       
-      "pt": ["Patti 8'", "nos", 70],
-      "mpt": ["Magnic Patti 8'", "nos", 105],
-      "xpt": ["Xpert Patti 8'", "nos", 130],
-      "gpt": ["Gypserra Patti 12'", "nos", 430],
+      "pa": ["Patti 8'", "nos", 70],
+      "mpa": ["Magnic Patti 8'", "nos", 105],
+      "xpa": ["Xpert Patti 8'", "nos", 130],
+      "gpa": ["Gypserra Patti 12'", "nos", 430],
       
-      "bt": ["Bottom 8'", "nos", 70],
-      "mbt": ["Magnic Bottom 8'", "nos", 105],
-      "xbt": ["Xpert Bottom 8'", "nos", 130],
-      "gbt": ["Gypserra Bottom 12'", "nos", 430],
+      "bo": ["Bottom 8'", "nos", 70],
+      "mbo": ["Magnic Bottom 8'", "nos", 105],
+      "xbo": ["Xpert Bottom 8'", "nos", 130],
+      "gbo": ["Gypserra Bottom 12'", "nos", 430],
       
       "pe": ["Perimeter 8'", "nos", 45],
       "mpe": ["Magnic Perimeter 8'", "nos", 60],
@@ -162,6 +162,7 @@
       "u": ["Unloading", "", 0],
       "lu": ["Loading & Unloading", "", 0],
       "t": ["Transport", "", 0],
+      "d": ["Discount", "", 0],
     };
     
     // Populate product reference table
@@ -287,6 +288,12 @@
         format: [80, 300 + history.length * 10],
       });
 
+    
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const formattedTime = `${hours}:${minutes}`;
+
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
       doc.text("RECIEPT", 40, 10, { align: "center" });
@@ -294,9 +301,10 @@
 
       doc.setFontSize(10);
       doc.text(`Date: ${new Date().toLocaleDateString()}`, 50, 18);
-      doc.text(`Party: ${party}`, 1, 23);
+      doc.text(`Time: ${formattedTime}`, 50, 23);
+      doc.text(`Info: ${party}`, 1, 28);
 
-      let y = 30;
+      let y = 35;
       doc.setFontSize(10);
       doc.text("__________________________________________________________________________________________________________", 0, y - 4.5);
       doc.text("Product", 1, y);
@@ -323,57 +331,57 @@
       doc.setFontSize(10);
       doc.text("Contact Number: 9022405221", 40, y+8, { align: "center" });
       
-      doc.text("..........................................................................................................", 0, y + 15);
+      doc.text("..........................................................................................................", 0, y + 20);
       
-      y += 15;
+    //   y += 15;
       
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text("RECIEPT COPY", 40, y+10, { align: "center" });
-      doc.text("............................", 40, y+11, { align: "center" });
+    //   doc.setFontSize(12);
+    //   doc.setFont("helvetica", "bold");
+    //   doc.text("RECIEPT COPY", 40, y+10, { align: "center" });
+    //   doc.text("............................", 40, y+11, { align: "center" });
       
-      doc.setFontSize(10);
-      doc.text(`Date: ${new Date().toLocaleDateString()}`, 50, y+18);
-      doc.text(`Party: ${party}`, 1, y+23);
+    //   doc.setFontSize(10);
+    //   doc.text(`Date: ${new Date().toLocaleDateString()}`, 50, y+18);
+    //   doc.text(`Party: ${party}`, 1, y+23);
 
-      y += 30;
-      doc.setFontSize(10);
-      doc.text("__________________________________________________________________________________________________________", 0, y - 4.5);
-      doc.text("Product", 1, y);
-      doc.text("Qty", 47, y);
-      doc.text("Rate", 60, y);
-      doc.text("Total", 70, y);
-      doc.text("__________________________________________________________________________________________________________", 0, y + 1.2);
+    //   y += 30;
+    //   doc.setFontSize(10);
+    //   doc.text("__________________________________________________________________________________________________________", 0, y - 4.5);
+    //   doc.text("Product", 1, y);
+    //   doc.text("Qty", 47, y);
+    //   doc.text("Rate", 60, y);
+    //   doc.text("Total", 70, y);
+    //   doc.text("__________________________________________________________________________________________________________", 0, y + 1.2);
 
-      history.forEach(item => {
-        y += 8;
-        doc.text(item.name, 1, y);
-        doc.text(item.displayQuantity, 47, y);
-        doc.text(item.quantity === 1 ? "" : `${item.pricePerUnit}`, 60, y);
-        doc.text(`${item.finalAmount}`, 70, y);
-      });
+    //   history.forEach(item => {
+    //     y += 8;
+    //     doc.text(item.name, 1, y);
+    //     doc.text(item.displayQuantity, 47, y);
+    //     doc.text(item.quantity === 1 ? "" : `${item.pricePerUnit}`, 60, y);
+    //     doc.text(`${item.finalAmount}`, 70, y);
+    //   });
 
-      y += 8;
-      doc.text("__________________________________________________________________________________________________________", 0, y - 3.2);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(12);
-      doc.text("Total", 1, y+1.5);
-      doc.text(`${total}`, 70, y+1.5);
-      doc.text("__________________________________________________________________________________________________________", 0, y + 3.2);
-      doc.setFontSize(10);
+    //   y += 8;
+    //   doc.text("__________________________________________________________________________________________________________", 0, y - 3.2);
+    //   doc.setFont("helvetica", "bold");
+    //   doc.setFontSize(12);
+    //   doc.text("Total", 1, y+1.5);
+    //   doc.text(`${total}`, 70, y+1.5);
+    //   doc.text("__________________________________________________________________________________________________________", 0, y + 3.2);
+    //   doc.setFontSize(10);
       
-      // Generate QR code
-      const qr = new QRious({
-        value: `upi://pay?pa=sflenterprises1@oksbi&pn=SFL%20Enterprises&am=${total}&cu=INR`,
-        size: 80,
-      });
+    //   // Generate QR code
+    //   const qr = new QRious({
+    //     value: `upi://pay?pa=sflenterprises1@oksbi&pn=SFL%20Enterprises&am=${total}&cu=INR`,
+    //     size: 80,
+    //   });
 
-      // Add QR code to PDF
-      const qrDataURL = qr.toDataURL();
-      y += 8;
-      doc.addImage(qrDataURL, "PNG", 10, y, 60, 60);
+    //   // Add QR code to PDF
+    //   const qrDataURL = qr.toDataURL();
+    //   y += 8;
+    //   doc.addImage(qrDataURL, "PNG", 10, y, 60, 60);
       
-      doc.text("..........................................................................................................", 0, y + 65);
+    //   doc.text("..........................................................................................................", 0, y + 65);
       
       doc.save("Thermal_Printer_Bill.pdf");
     }
