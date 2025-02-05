@@ -212,16 +212,19 @@
       const productDetails = products[productCode];
       const productName = productDetails[0];
       const pricePerUnit = amount === 0 ? productDetails[2] : amount;
-      const displayQuantity = quantity > 1 ? `${quantity} nos` : ""; // Fixed quantity logic
+      const unit = productDetails[1]; // Fetch the correct unit
+      const newpricePerUnit = quantity == 1 && unit == "" ? "" : `${pricePerUnit}`;
+      const displayQuantity = quantity == 1 && unit == "" ? "" : `${quantity} ${unit}`;
+    //   const displayQuantity = quantity > 1 ? `${quantity} nos` : ""; // Fixed quantity logic
       const finalAmount = quantity * pricePerUnit;
 
       const existingIndex = history.findIndex(item => item.code === productCode);
       if (existingIndex !== -1) {
         const existingItem = history[existingIndex];
         total -= existingItem.finalAmount;
-        history[existingIndex] = { code: productCode, name: productName, quantity, displayQuantity, pricePerUnit, finalAmount };
+        history[existingIndex] = { code: productCode, name: productName, quantity, displayQuantity, newpricePerUnit, finalAmount };
       } else {
-        history.push({ code: productCode, name: productName, quantity, displayQuantity, pricePerUnit, finalAmount });
+        history.push({ code: productCode, name: productName, quantity, displayQuantity, newpricePerUnit, finalAmount });
       }
 
       total += finalAmount;
@@ -252,8 +255,8 @@
           <tr>
             <td>${item.name}</td>
             <td>${item.displayQuantity}</td>
-            <td>${item.quantity === 1 ? "" : `₹${item.pricePerUnit}`}</td>
-            <td>₹${item.finalAmount}</td>
+            <td>${item.newpricePerUnit}</td>
+            <td>${item.finalAmount}</td>
           </tr>`;
         outputTableBody.insertAdjacentHTML("beforeend", row);
       });
@@ -317,7 +320,7 @@
         y += 8;
         doc.text(item.name, 1, y);
         doc.text(item.displayQuantity, 47, y);
-        doc.text(item.quantity === 1 ? "" : `${item.pricePerUnit}`, 60, y);
+        doc.text(item.newpricePerUnit, 60, y);
         doc.text(`${item.finalAmount}`, 70, y);
       });
 
