@@ -102,8 +102,8 @@
     const gstPrice = purchasePrice + ((purchasePrice * margin) / 100 );
 
     document.getElementById('result').innerHTML = `
-      <p>Cash Price & GST Included Price: ₹${cashPrice.toFixed(2)}</p>
-      <p>Without GST Price: ₹${gstPrice.toFixed(2)}</p>
+      <p>GST Price: ₹${gstPrice.toFixed(2)}</p>
+      <p>GST Included Price: ₹${cashPrice.toFixed(2)}</p>
       `;
   }
 </script>
