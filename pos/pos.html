@@ -165,6 +165,8 @@
       "d": ["Discount", "", 0],
     };
     
+    let customProducts = {};
+    
     // Populate product reference table
     function populateProductReference() {
       const referenceTableBody = document.getElementById("productReference");
@@ -193,11 +195,23 @@
         return;
       }
       
+      if (input.startsWith('*')) {
+        const customProductName = input.slice(1);
+        if (customProductName) {
+          customProducts[customProductName] = [customProductName, "nos", 0];
+          alert(`Custom product "${customProductName}" added. Now enter quantity and rate in the format: quantity*${customProductName}*rate`);
+        }
+        clearInput();
+        return;
+      }
+
       const [quantityStr, productCode, amountStr] = input.split("*");
       const quantity = quantityStr ? parseInt(quantityStr) : 10; // Default quantity is 10
       const amount = amountStr ? parseInt(amountStr) : 0;
 
-      if (!products[productCode]) {
+      const productDetails = products[productCode] || customProducts[productCode];
+
+      if (!productDetails) {
         alert("Invalid product code!");
         clearInput();
         return;
@@ -209,7 +223,7 @@
         return;
       }
 
-      const productDetails = products[productCode];
+    //   const productDetails = products[productCode];
       const productName = productDetails[0];
       const pricePerUnit = amount === 0 ? productDetails[2] : amount;
       const unit = productDetails[1]; // Fetch the correct unit
@@ -305,7 +319,7 @@
       doc.setFontSize(12);
       doc.text(`Date: ${new Date().toLocaleDateString()}`, 46, 18);
       doc.text(`Time: ${formattedTime}`, 46, 23);
-      doc.text(`Info: ${party}`, 1, 28);
+      doc.text(`Info: ${party}`, 1, 30);
 
       let y = 38;
       doc.setFontSize(12);
@@ -342,8 +356,8 @@
       
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
-      doc.text("Total", 1, y + 1.6);
-      doc.text(`${total}`, 63, y + 1.6);
+      doc.text("Total", 1, y + 2);
+      doc.text(`${total}`, 63, y + 2);
 
       // Horizontal Line (Bottom Border)
       doc.text("__________________________________________________________________________________________________________", 0, y + 3.2);
