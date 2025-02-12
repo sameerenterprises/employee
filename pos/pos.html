@@ -102,15 +102,15 @@
   <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
   <script>
     const products = {
-      "b": ["Gypsum Board 6'4'12.5mm", "nos", 330],
-      "gb": ["Gyproc Board 6'4'12.5mm", "nos", 430],
-      "hb648": ["Hilux Board 6'4'8mm", "nos", 750],
-      "hb8412": ["Hilux Board 8'4'12mm", "nos", 1540],
-      "gmr": ["Gyproc MR 6'4'12.5mm", "nos", 870],
-      "gfr": ["Gyproc FR 6'4'12.5mm", "nos", 850],
-      "e646": ["Everest Board 6'4'6mm", "nos", 450],
-      "e648": ["Everest Board 6'4'8mm", "nos", 550],
-      "e8412": ["Everest Board 8'4'12mm", "nos", 1720],
+      "b": ["G-Board 6'4'12.5", "nos", 330],
+      "gb": ["G-Board 6'4'12.5", "nos", 430],
+      "hb648": ["H-Board 6'4'8", "nos", 750],
+      "hb8412": ["H-Board 8'4'12", "nos", 1540],
+      "gmr": ["MR-Board 6'4'12.5", "nos", 870],
+      "gfr": ["FR-Board 6'4'12.5", "nos", 850],
+      "e646": ["E-Board 6'4'6", "nos", 450],
+      "e648": ["E-Board 6'4'8", "nos", 550],
+      "e8412": ["E-Board 8'4'12", "nos", 1720],
       
       "pa": ["Patti 8'", "nos", 70],
       "mpa": ["Magnic Patti 8'", "nos", 105],
@@ -133,29 +133,29 @@
       "gal": ["Gypserra Al 12'", "nos", 150],
       
       "gp": ["Gypsum Plaster", "bg", 200],
-      "jc": ["Jointing Compound", "bg", 550],
+      "jc": ["G-Jointing Compound", "bg", 550],
 
       "ft": ["Fiber Tape", "roll", 100],
-      "gft": ["Gyproc Fiber Tape", "roll", 230],
-      "gpt": ["Gyproc Paper Tape", "roll", 230],
+      "gft": ["G-Fiber Tape", "roll", 230],
+      "gpt": ["G-Paper Tape", "roll", 230],
         
-      "ds": ["Drywall Screw 1inch", "box", 200],
-      "ds1.5": ["Drywall Screw 1.5inch", "box", 200],
-      "gds": ["Gyproc Screw 1inch", "box", 600],
-      "gds1.5": ["Gyproc Screw 1.5inch", "box", 380],
-      "gds2": ["Gyproc Screw 2inch", "box", 550],
-      "mtm": ["MTM Screw 8x13mm", "box", 190],
-      "gmtm": ["Gyproc MTM Screw 4.2x13mm", "box", 520],
+      "ds": ["Screw 1'", "box", 200],
+      "ds1.5": ["Screw 1.5'", "box", 200],
+      "gds": ["G-Screw 1'", "box", 600],
+      "gds1.5": ["G-Screw 1.5'", "box", 380],
+      "gds2": ["G-Screw 2'", "box", 550],
+      "mtm": ["MTM Screw 8x13", "box", 190],
+      "gmtm": ["G-MTM Screw 4.2x13", "box", 520],
 
       "cc": ["Connecting Clip", "pkt", 180],
-      "gcc": ["Gyproc Connecting Clip", "pkt", 640],
-      "gsc": ["Gyproc Soffit Cleate", "pkt", 270],
+      "gcc": ["G-Connecting Clip", "pkt", 640],
+      "gsc": ["G-Soffit Cleate", "pkt", 270],
 
-      "gsd": ["Gyproc Sadoline", "nos", 160],
-      "gab": ["Gyproc Angle Bead", "nos", 160],
+      "gsd": ["G-Sadoline", "nos", 160],
+      "gab": ["G-Angle Bead", "nos", 160],
 
-      "gbd": ["Gyproc Bondit", "kg", 160],
-      "ggp": ["Gyproc Gyplaster", "kg", 120],
+      "gbd": ["G-Bondit", "kg", 160],
+      "ggp": ["G-Gyplaster", "kg", 120],
       "dcbd": ["DC Bond", "kg", 100],
 
       "l": ["Loading", "", 0],
@@ -214,7 +214,7 @@
       const pricePerUnit = amount === 0 ? productDetails[2] : amount;
       const unit = productDetails[1]; // Fetch the correct unit
       const newpricePerUnit = quantity == 1 && unit == "" ? "" : `${pricePerUnit}`;
-      const displayQuantity = quantity == 1 && unit == "" ? "" : `${quantity} ${unit}`;
+      const displayQuantity = quantity == 1 && unit == "" ? "" : `${quantity}`;
     //   const displayQuantity = quantity > 1 ? `${quantity} nos` : ""; // Fixed quantity logic
       const finalAmount = quantity * pricePerUnit;
 
@@ -297,45 +297,61 @@
       const minutes = String(now.getMinutes()).padStart(2, '0');
       const formattedTime = `${hours}:${minutes}`;
 
-      doc.setFontSize(12);
+      doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
       doc.text("RECIEPT", 40, 10, { align: "center" });
       doc.text(".................", 40, 11, { align: "center" });
 
-      doc.setFontSize(10);
-      doc.text(`Date: ${new Date().toLocaleDateString()}`, 50, 18);
-      doc.text(`Time: ${formattedTime}`, 50, 23);
+      doc.setFontSize(12);
+      doc.text(`Date: ${new Date().toLocaleDateString()}`, 46, 18);
+      doc.text(`Time: ${formattedTime}`, 46, 23);
       doc.text(`Info: ${party}`, 1, 28);
 
-      let y = 35;
-      doc.setFontSize(10);
+      let y = 38;
+      doc.setFontSize(12);
+
+      // Horizontal Line (Top Border)
       doc.text("__________________________________________________________________________________________________________", 0, y - 4.5);
-      doc.text("Product", 1, y);
-      doc.text("Qty", 47, y);
-      doc.text("Rate", 60, y);
-      doc.text("Total", 70, y);
+      
+      // Column Titles
+      doc.text("Product", 1, y+0.1);
+      doc.text("Qty", 41, y+0.1);
+      doc.text("Rate", 53, y+0.1);
+      doc.text("Total", 66, y+0.1);
+
+      // Horizontal Line (Below Titles)
       doc.text("__________________________________________________________________________________________________________", 0, y + 1.2);
+
+      // Vertical Lines for Columns
+      doc.line(40, y - 4, 40, y + (history.length * 8)+5);  // Line after "Product"
+      doc.line(52, y - 4, 52, y + (history.length * 8)+5);  // Line after "Qty"
+      doc.line(65, y - 4, 65, y + (history.length * 8)+5);  // Line after "Rate"
 
       history.forEach(item => {
         y += 8;
         doc.text(item.name, 1, y);
-        doc.text(item.displayQuantity, 47, y);
-        doc.text(item.newpricePerUnit, 60, y);
-        doc.text(`${item.finalAmount}`, 70, y);
+        doc.text(item.displayQuantity, 41, y);
+        doc.text(item.newpricePerUnit, 53, y);
+        doc.text(`${item.finalAmount}`, 66, y);
       });
 
       y += 8;
+
+      // Horizontal Line (Above Total)
       doc.text("__________________________________________________________________________________________________________", 0, y - 3.2);
+      
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(12);
-      doc.text("Total", 1, y+1.5);
-      doc.text(`${total}`, 70, y+1.5);
+      doc.setFontSize(14);
+      doc.text("Total", 1, y + 1.6);
+      doc.text(`${total}`, 63, y + 1.6);
+
+      // Horizontal Line (Bottom Border)
       doc.text("__________________________________________________________________________________________________________", 0, y + 3.2);
-      doc.setFontSize(10);
-      doc.text("Contact Number: 9022405221", 40, y+8, { align: "center" });
       
+      doc.setFontSize(12);
+      doc.text("Contact Number: 9022405221", 40, y + 8, { align: "center" });
       doc.text("..........................................................................................................", 0, y + 20);
-      
+
       // y += 20;
       
       // doc.setFontSize(12);
