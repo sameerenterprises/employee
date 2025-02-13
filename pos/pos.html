@@ -102,7 +102,7 @@
   <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
   <script>
     const products = {
-      "b": ["G-Board 6'4'12.5", "nos", 330],
+      "b": ["Board 6'4'12.5", "nos", 330],
       "gb": ["G-Board 6'4'12.5", "nos", 430],
       "hb648": ["H-Board 6'4'8", "nos", 750],
       "hb8412": ["H-Board 8'4'12", "nos", 1540],
@@ -111,6 +111,7 @@
       "e646": ["E-Board 6'4'6", "nos", 450],
       "e648": ["E-Board 6'4'8", "nos", 550],
       "e8412": ["E-Board 8'4'12", "nos", 1720],
+      "pops": ["POP Sheet 2x3x10", "nos", 65],
       
       "pa": ["Patti 8'", "nos", 70],
       "mpa": ["Magnic Patti 8'", "nos", 105],
@@ -133,30 +134,62 @@
       "gal": ["Gypserra Al 12'", "nos", 150],
       
       "gp": ["Gypsum Plaster", "bg", 200],
-      "jc": ["G-Jointing Compound", "bg", 550],
+      "jc": ["G-Easi Fill 90", "bg", 550],
+      "xgp25": ["Xpert Plaster 25KG", "bg", 300],
+      "xgp20": ["Xpert Plaster 20KG", "bg", 240],
+      "e25": ["Elite 100 - 25kg", "bg", 340],
+      "emr25": ["Elite MR - 25kg", "bg", 380],
+      "rm10": ["Readymix 10kg", "bg", 250],
 
       "ft": ["Fiber Tape", "roll", 100],
       "gft": ["G-Fiber Tape", "roll", 230],
       "gpt": ["G-Paper Tape", "roll", 230],
         
-      "ds": ["Screw 1'", "box", 200],
-      "ds1.5": ["Screw 1.5'", "box", 200],
-      "gds": ["G-Screw 1'", "box", 600],
-      "gds1.5": ["G-Screw 1.5'", "box", 380],
-      "gds2": ["G-Screw 2'", "box", 550],
+      "ds": ["Screw 1inch", "box", 200],
+      "ds1.5": ["Screw 1.5inch", "box", 200],
+      "gds": ["G-Screw 1inch", "box", 600],
+      "gds1.5": ["G-Screw 1.5inch", "box", 380],
+      "gds2": ["G-Screw 2inch", "box", 550],
       "mtm": ["MTM Screw 8x13", "box", 190],
       "gmtm": ["G-MTM Screw 4.2x13", "box", 520],
+      "gbc": ["G-Butterfly Clip", "nos", 14],
+      "rp": ["Rawl Plug \n (100 nos/pkt)","nos", 300],
+      "fsnr": ["Fasterner", "nos", 200],
 
       "cc": ["Connecting Clip", "pkt", 180],
       "gcc": ["G-Connecting Clip", "pkt", 640],
+      "sc": ["Soffit Cleate", "nos", 200],
       "gsc": ["G-Soffit Cleate", "pkt", 270],
 
       "gsd": ["G-Sadoline", "nos", 160],
       "gab": ["G-Angle Bead", "nos", 160],
 
-      "gbd": ["G-Bondit", "kg", 160],
-      "ggp": ["G-Gyplaster", "kg", 120],
-      "dcbd": ["DC Bond", "kg", 100],
+      "gbd10": ["G-Bondit 10kg", "kg", 1600],
+      "ggp20": ["G-Gyplaster 10kg", "bg", 1200],
+      "dcbd10": ["DC Bond 10kg", "bg", 1000],
+
+      "mt": ["Main Tee", "nos", 95],
+      "mmt": ["Maxtra Main Tee", "nos", 0],
+      
+      "ct2": ["Cross Tee 2ft", "nos", 20],
+      "mct2": ["Maxtra CT 2ft", "nos", 28],
+      
+      "ct4": ["Cross Tee 4ft", "nos", 40],
+      "mct4": ["Maxtra CT 4ft", "nos", 56],
+      
+      "wal": ["Wall Angle", "nos", 80],
+      "mwal": ["Maxtra Wall Angle", "nos", 100],
+      
+      "td450": ["Trap Door 450x450", "nos", 2000],
+      
+      "gw12": ["Glasswool 12x50", "nos", 3200],
+      "gw16": ["Glasswool 16x50", "nos", 3400],
+      "gw24": ["Glasswool 24x50", "nos", 4800],
+      
+      "gddt": ["Dew Drop Tiles \n (10 nos/box)", "nos", 1000],
+      "ggt": ["Granular Tiles \n (10 nos/box)", "nos", 1000],
+      "lpht": ["Laban Tiles \n (14 nos/box)", "nos", 1750],
+      "et": ["Everest Tiles \n (10 nos/box)", "nos", 1000],
 
       "l": ["Loading", "", 0],
       "u": ["Unloading", "", 0],
@@ -341,15 +374,15 @@
       doc.line(52, y - 4, 52, y + (history.length * 8)+5);  // Line after "Qty"
       doc.line(65, y - 4, 65, y + (history.length * 8)+5);  // Line after "Rate"
 
+      y += 8;
+
       history.forEach(item => {
-        y += 8;
         doc.text(item.name, 1, y);
         doc.text(item.displayQuantity, 41, y);
         doc.text(item.newpricePerUnit, 53, y);
         doc.text(`${item.finalAmount}`, 66, y);
+        y += item.name.includes("(") ? 12 : 8;
       });
-
-      y += 8;
 
       // Horizontal Line (Above Total)
       doc.text("__________________________________________________________________________________________________________", 0, y - 3.2);
