@@ -136,6 +136,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
   <script>
+  var password = prompt("Enter Password:");
+  if (password !== "Lateef@786") {
+    alert("Access Denied!");
+    window.location.href = "https://www.google.com"; // Redirect to another page
+  }
     const { jsPDF } = window.jspdf;
 
     const products = {
