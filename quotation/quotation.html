@@ -11,29 +11,37 @@
       margin: 0;
       padding: 0;
     }
+    
     .container {
       width: 90%;
       margin: 0 auto;
       padding: 20px;
+      max-width: 600px; /* Limit max width for better appearance on mobile */
     }
+    
     h1 {
       text-align: center;
     }
+    
     input {
       padding: 10px;
       margin: 10px 0;
       border-radius: 5px;
       border: 1px solid #ccc;
-      width: calc(100% - 22px);
+      width: 100%; /* Ensure inputs use full width */
     }
+    
     .input-group {
       margin-bottom: 20px;
     }
+    
     #outputTable, #productReferenceTable {
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 20px;
+      overflow-x: auto; /* Allow horizontal scrolling for small screens */
     }
+    
     #outputTable th, #outputTable td, #productReferenceTable th, #productReferenceTable td {
       border: 1px solid #ddd;
       padding: 8px;
@@ -41,15 +49,33 @@
       word-wrap: break-word;
       white-space: normal;
     }
+    
     #outputTable th, #productReferenceTable th {
       background-color: #f2f2f2;
     }
+    
     .reference-container {
       margin-top: 20px;
       padding: 20px;
       background-color: #fff;
       border-radius: 5px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    @media (max-width: 600px) {
+      .container {
+        padding: 15px;
+      }
+    
+      #outputTable, #productReferenceTable {
+        font-size: 14px; /* Adjust font size on small screens */
+      }
+    
+      #outputTable, #productReferenceTable {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
     }
   </style>
 </head>
@@ -65,12 +91,12 @@
     <table id="outputTable">
       <thead>
         <tr>
-          <th>Product Name</th>
+          <th>Product</th>
           <th>Quantity</th>
           <th>Cost Price</th>
           <th>Margin</th>
-          <th>Price After Margin</th>
-          <th>Total Price</th>
+          <th>Sell Price</th>
+          <th>Total</th>
         </tr>
       </thead>
       <tbody id="output"></tbody>
@@ -241,13 +267,14 @@
       const referenceTableBody = document.getElementById("productReference");
       for (const code in products) {
         const [name, unit, price, gst] = products[code];
+        const priceWithGST = price + (price * gst / 100);
         const row = `
           <tr>
             <td>${code}</td>
             <td>${name}</td>
             <td>${gst}</td>
             <td>${unit}</td>
-            <td>₹${price}</td>
+            <td>₹${priceWithGST.toFixed(2)}</td>
           </tr>`;
         referenceTableBody.insertAdjacentHTML("beforeend", row);
       }
