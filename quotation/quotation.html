@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thermal Printer Bill</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      width: 90%;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    input {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      width: calc(100% - 22px);
+    }
+    .input-group {
+      margin-bottom: 20px;
+    }
+    #outputTable, #productReferenceTable {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    #outputTable th, #outputTable td, #productReferenceTable th, #productReferenceTable td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+      word-wrap: break-word;
+      white-space: normal;
+    }
+    #outputTable th, #productReferenceTable th {
+      background-color: #f2f2f2;
+    }
+    .reference-container {
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Thermal Printer Bill</h1>
+    
+    <div class="input-group">
+      <input type="text" id="partyInfo" placeholder="Party Information">
+    </div>
+
+    <!-- Table Section -->
+    <table id="outputTable">
+      <thead>
+        <tr>
+          <th>Product Name</th>
+          <th>Quantity</th>
+          <th>Cost Price</th>
+          <th>Margin</th>
+          <th>Price After Margin</th>
+          <th>Total Price</th>
+        </tr>
+      </thead>
+      <tbody id="output"></tbody>
+    </table>
+
+    <!-- Input Section -->
+    <div class="input-group">
+      <input type="text" id="productInput" placeholder="Type product code (quantity*productkey*margin)" onkeydown="handleEnter(event)">
+      <button onclick="generatePDF()">Generate PDF</button>
+    </div>
+
+    <!-- Total Margin Section -->
+    <div id="totalMargin">
+      <p>Total Margin (Amount): ₹<span id="totalMarginAmount">0</span></p>
+      <p>Total Margin (Percentage): <span id="totalMarginPercentage">0</span>%</p>
+    </div>
+  </div>
+
+  <!-- Product Reference Section -->
+  <div class="reference-container">
+    <h2>Product Reference</h2>
+    <table id="productReferenceTable">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Product Name</th>
+          <th>GST</th>
+          <th>Unit</th>
+          <th>Price (₹)</th>
+        </tr>
+      </thead>
+      <tbody id="productReference"></tbody>
+    </table>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+  <script>
+    const { jsPDF } = window.jspdf;
+
+    const products = {
+      "b": ["Board 6'4'12.5", "nos", 330, 18],
+      "gb": ["Gypsum Board PL 6'x4'x12.5mm", "nos", 337.58, 18],
+      "hb648": ["H-Board 6'4'8", "nos", 750, 18],
+      "hb8412": ["H-Board 8'4'12", "nos", 1540, 18],
+      "gmr": ["Gyproc Board MR 6'x4'x12.5mm", "nos", 624.55, 18],
+      "gfr6412": ["Gyproc Board FR 6'x4'x12.5mm", "nos", 574, 18],
+	  "gfr6415": ["Gyproc Board FR 6'x4'x15mm", "nos", 650.31, 18],
+	  "gfr8412": ["Gyproc Board FR 8'x4'x12.5mm", "nos", 771.81, 18],
+      "e646": ["E-Board 6'4'6", "nos", 450, 18],
+      "e648": ["E-Board 6'4'8", "nos", 550, 18],
+      "e8412": ["E-Board 8'4'12", "nos", 1720, 18],
+      "pops": ["POP Sheet 2x3x10", "nos", 65, 18],
+	  "ghb": ["Habito Standard 13x1220x2440mm", "nos", 1152.98, 18],
+	  "gghb": ["Gyproc Glasroc H Board 1220x1830x12.5mm", "nos", 1400.98, 18],
+      
+      "pa": ["Patti 8'", "nos", 70, 18],
+      "mpa": ["Magnic Patti 8'", "nos", 105, 18],
+      "xpa": ["Xpert Patti 8'", "nos", 130, 18],
+	  "mgpa": ["Megastil Ceiling Section-3660mm", "nos", 220.47, 18],
+      "gpa": ["Gypserra Ceiling Section 3660mm", "nos", 262.84, 18],
+      
+      "bo": ["Bottom 8'", "nos", 70, 18],
+      "mbo": ["Magnic Bottom 8'", "nos", 105, 18],
+      "xbo": ["Xpert Bottom 8'", "nos", 130, 18],
+	  "mgbo": ["Megastil Intermediate Channel-3660mm", "nos", 137.71, 18],
+      "gbo": ["Gypserra Intermediat-3660mm", "nos", 262.92, 18],
+      
+      "pe": ["Perimeter 8'", "nos", 45, 18],
+      "mpe": ["Magnic Perimeter 8'", "nos", 60, 18],
+      "xpe": ["Xpert Perimeter 8'", "nos", 95, 18],
+	  "mgpe": ["Megastil Perimeter Channel-3660mm", "nos", 211.43, 18],
+      "gpe": ["Gypserra Perimeter-3660mm", "nos", 158.86, 18],
+        
+      "al": ["Al 8'", "nos", 25, 18],
+      "mal": ["Magnic Al 8'", "nos", 40, 18],
+      "xal": ["Xpert Al 8'", "nos", 50, 18],
+	  "mgal": ["Megastil Ceiling Angle-3660mm", "nos", 66.50, 18],
+      "gal": ["Gypserra Ceiling Angle 3660mm", "nos", 83.25, 18],
+	  
+	  "gf50": ["Gypserra Floor Channel 50x3660mm", "nos", 260.13, 18],
+	  "gf72": ["Gypserra Floor Channel 72x3660mm", "nos", 364.62, 18],
+	  "gs48": ["Gypserra Stud 48x3660mm", "nos", 307.34, 18],
+	  "gs70": ["Gypserra Stud 70x3660mm", "nos", 419.12, 18],
+	  "gnc": ["Noggin Channel 48x492mm", "nos", 51.63, 18],
+      
+      "gp": ["Gypsum Plaster", "bg", 200, 5],
+      "jc": ["G-Easi Fill 90", "bg", 550, 18],
+      "xgp25": ["Xpert Plaster 25KG", "bg", 300, 5],
+      "xgp20": ["Xpert Plaster 20KG", "bg", 240, 5],
+      "e25": ["Elite 100 - 25kg", "bg", 340, 5],
+      "emr25": ["Elite MR - 25kg", "bg", 380, 5],
+      "rm20": ["Gyproc Protop Ready Mix Jc 20kg", "bkt", 723.12, 18],
+
+      "ft": ["Fiber Tape", "roll", 100, 18],
+      "gft": ["Gyproc Fiber Glass Tape", "roll", 138.96, 18],
+      "gpt": ["Gyproc Joint Paper Tape", "roll", 141.01, 18],
+        
+      "ds": ["Screw 1inch", "box", 200, 18],
+      "ds1.5": ["Screw 1.5inch", "box", 200, 18],
+      "gds": ["Gyproc Drywall Screw-25mm(1000Nos/Pkt)", "box", 338.23, 18],
+      "gds1.5": ["Gyproc Drywall Screw-35mm(500Nos/Pkt)", "box", 241.22, 18],
+      "gds2": ["Gyproc Drywall Screw-6x50mm (500Nos/Pkt)", "box", 345.32, 18],
+      "mtm": ["MTM Screw 8x13", "box", 190, 18],
+      "gmtm": ["Gyproc Metel To Metal Screw-13mm(500Nos/Pkt)", "box", 363.46, 18],
+	  "gphs": ["Gyproc Phillips PanHead Screw(250Nos/Pkt)", "box", 885.57, 18],
+      "gbc": ["G-Butterfly Clip", "nos", 14, 18],
+      "rp": ["Rawl Plug \n (100 nos/pkt)","nos", 300, 18],
+      "fsnr": ["Fasterner", "nos", 200, 18],
+	  "ggwb": ["Gyproc Glasswool Bracket", "nos", 10.56, 18],
+
+      "cc": ["Connecting Clip", "pkt", 180, 18],
+      "gcc": ["Gyproc Connecting Clip (100Nos/Pkt)", "pkt", 447.63, 18],
+      "sc": ["Soffit Cleate", "nos", 200, 18],
+      "gsc": ["Gyproc Soffit Cleate(50Nos/Pkt)", "pkt", 180.39, 18],
+	  "grp": ["Gyproc Rawl Plug 8x45mm(100Nos/pkt)", "pkt", 768.31, 18],
+
+      "gsd": ["Gyproc Shadowline Section", "nos", 99.65, 18],
+      "gab": ["G-Angle Bead", "nos", 160, 18],
+
+      "gbd10": ["G-Bondit 10kg", "kg", 1600, 18],
+      "ggp20": ["G-Gyplaster 10kg", "bg", 1200, 18],
+      "dcbd10": ["DC Bond 10kg", "bg", 1000, 18],
+
+      "mt": ["Main Tee", "nos", 95, 18],
+      "mxmt": ["Marix Grid MT -3000 (24mm)", "nos", 133.08, 18],
+	  "mmt": ["Maxtra Main Runner-3000x24mm", "nos", 100.45, 18],
+      
+      "ct2": ["Cross Tee 2ft", "nos", 20, 18],
+      "mxct2": ["Matrix Grid-600 (24mm)", "nos", 26.75, 18],
+	  "mct2": ["Maxtra Cross Tee-600x24mm", "nos", 18.39, 18],
+      
+      "ct4": ["Cross Tee 4ft", "nos", 40, 18],
+      "mxct4": ["Matrix CT 4ft", "nos", 56, 18],
+	  "mct4": ["Maxtra Cross Tee-1200x24mm", "nos", 35.81, 18],
+      
+      "wal": ["Wall Angle", "nos", 80, 18],
+      "mxwal": ["Matrix Grid-WA-3000mm.(24mm)", "nos", 114.36, 18],
+	  "mwal": ["Maxtra Wall Angle-3000x24mm)", "nos", 68.26, 18],
+      
+      "td450": ["Trap Door 450x450", "nos", 2000, 18],
+      
+      "gw12": ["Glasswool 12x50", "nos", 3200, 18],
+      "gw16": ["Glasswool 16x50", "nos", 3400, 18],
+      "gw24": ["Glasswool 24x50", "nos", 4800, 18],
+      
+      "gddt": ["Dew Drop Tiles \n (10 nos/box)", "nos", 1000, 18],
+      "ggt": ["Granular Tiles \n (10 nos/box)", "nos", 1000, 18],
+      "lpht": ["Laban Tiles \n (14 nos/box)", "nos", 1750, 18],
+      "et": ["Everest Tiles \n (10 nos/box)", "nos", 1000, 18],
+
+      "l": ["Loading", "", 0, 18],
+      "u": ["Unloading", "", 0, 18],
+      "lu": ["Loading & Unloading", "", 0, 18],
+      "t": ["Transport", "", 0, 18],
+      "d": ["Discount", "", 0, 18],
+    };
+
+
+    let history = [];
+    let totalMarginAmount = 0;
+    let totalCostPrice = 0;
+    let totalPriceAfterMargin = 0;
+
+    // Populate product reference table
+    function populateProductReference() {
+      const referenceTableBody = document.getElementById("productReference");
+      for (const code in products) {
+        const [name, unit, price, gst] = products[code];
+        const row = `
+          <tr>
+            <td>${code}</td>
+            <td>${name}</td>
+            <td>${gst}</td>
+            <td>${unit}</td>
+            <td>₹${price}</td>
+          </tr>`;
+        referenceTableBody.insertAdjacentHTML("beforeend", row);
+      }
+    }
+
+    populateProductReference();
+
+    function addProduct() {
+      const input = document.getElementById("productInput").value.trim().replace(/ /g, '*');
+      if (input === "c") {
+        clearAll();
+        return;
+      }
+    
+      const [quantityStr, productCode, marginStr] = input.split("*");
+      const quantity = quantityStr ? parseFloat(quantityStr) : 1;
+    
+      const productDetails = products[productCode];
+    
+      if (!productDetails) {
+        alert("Invalid product code!");
+        clearInput();
+        return;
+      }
+    
+      const [productName, unit, basePrice, gstPercentage] = productDetails;
+      
+      // Calculate the GST amount and the cost price (base price + GST)
+      const gstAmount = (basePrice * gstPercentage) / 100;
+      const costPrice = basePrice + gstAmount;
+      
+      let margin = 0;
+      let priceAfterMargin = 0;
+      let marginAmount = 0;
+    
+      if (marginStr.includes("%")) {
+        // User entered percentage margin
+        const marginPercentage = parseFloat(marginStr.replace("%", ""));
+        priceAfterMargin = costPrice * (1 + marginPercentage / 100);
+        marginAmount = priceAfterMargin - costPrice;
+      } else {
+        // User entered absolute margin amount
+        marginAmount = parseFloat(marginStr);
+        priceAfterMargin = marginAmount;
+      }
+    
+      const totalPrice = quantity * priceAfterMargin;
+      const calculatedMarginPercentage = ((priceAfterMargin / costPrice) - 1)*100;
+    
+      totalMarginAmount += (priceAfterMargin - costPrice) * quantity;
+      totalCostPrice += quantity * costPrice;
+      totalPriceAfterMargin += totalPrice;
+    
+      history.push({
+        productName,
+        quantity,
+        costPrice,
+        margin: marginStr.includes("%") ? parseFloat(marginStr) : calculatedMarginPercentage.toFixed(2),
+        marginAmount: marginStr.includes("%") ? marginAmount.toFixed(2) : marginStr,
+        priceAfterMargin,
+        totalPrice,
+        gstPercentage,
+      });
+    
+      renderTable();
+      updateTotalMargin();
+      clearInput();
+    }
+
+
+    function renderTable() {
+      const outputTableBody = document.getElementById("output");
+      outputTableBody.innerHTML = "";
+
+      history.forEach(item => {
+        const row = `
+          <tr>
+            <td>${item.productName}</td>
+            <td>${item.quantity}</td>
+            <td>₹${item.costPrice.toFixed(2)}</td>
+            <td>${item.margin}%</td>
+            <td>₹${item.priceAfterMargin.toFixed(2)}</td>
+            <td>₹${item.totalPrice.toFixed(2)}</td>
+          </tr>`;
+        outputTableBody.insertAdjacentHTML("beforeend", row);
+      });
+
+      const totalRow = `
+        <tr>
+          <td colspan="5" style="text-align: right; font-weight: bold;">Total</td>
+          <td style="font-weight: bold;">₹${totalPriceAfterMargin.toFixed(2)}</td>
+        </tr>`;
+      outputTableBody.insertAdjacentHTML("beforeend", totalRow);
+    }
+
+    function updateTotalMargin() {
+      document.getElementById("totalMarginAmount").textContent = totalMarginAmount.toFixed(2);
+      const totalMarginPercentage = (totalMarginAmount / totalCostPrice) * 100;
+      document.getElementById("totalMarginPercentage").textContent = totalMarginPercentage.toFixed(2);
+    }
+
+    function clearAll() {
+      history = [];
+      totalMarginAmount = 0;
+      totalCostPrice = 0;
+      totalPriceAfterMargin = 0;
+      renderTable();
+      updateTotalMargin();
+    }
+
+    function clearInput() {
+      document.getElementById("productInput").value = "";
+      document.getElementById("productInput").focus();
+    }
+
+    function handleEnter(event) {
+      if (event.key === "Enter") {
+        addProduct();
+      }
+    }
+
+    function generatePDF() {
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+    
+      doc.setFontSize(14);
+      doc.text("Product Bill", 10, 10);
+      
+      const headers = ["Product Name", "Quantity", "Price", "GST %", "Price With GST", "Total Price"];
+      const data = history.map(item => {
+        const priceWithoutGST = item.priceAfterMargin / (1 + item.gstPercentage / 100);
+        return [
+          item.productName,
+          item.quantity,
+          `${priceWithoutGST.toFixed(2)}`, // Price without GST
+          `${item.gstPercentage}%`,         // GST Percentage
+          `${item.priceAfterMargin.toFixed(2)}`, // Price with margin
+          `${item.totalPrice.toFixed(2)}`  // Total Price
+        ];
+      });
+      
+      doc.setFont("helvetica", "bold"); 
+      data.push(["", "", "", "", "Total", `${totalPriceAfterMargin.toFixed(2)}`]);
+    
+      doc.autoTable({
+        startY: 20,
+        head: [headers],
+        body: data,
+      });
+      
+      doc.save("Product_Bill.pdf");
+    }
+
+  </script>
+</body>
+</html>
