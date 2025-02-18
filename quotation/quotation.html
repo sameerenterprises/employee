@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Thermal Printer Bill</title>
+  <title>Quotation</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -81,7 +81,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>Thermal Printer Bill</h1>
+    <h1>Quotation</h1>
     
     <div class="input-group">
       <input type="text" id="partyInfo" placeholder="Party Information">
@@ -93,9 +93,9 @@
         <tr>
           <th>Product</th>
           <th>Quantity</th>
-          <th>Cost Price</th>
+          <th>CP</th>
           <th>Margin</th>
-          <th>Sell Price</th>
+          <th>SP</th>
           <th>Total</th>
         </tr>
       </thead>
@@ -104,7 +104,7 @@
 
     <!-- Input Section -->
     <div class="input-group">
-      <input type="text" id="productInput" placeholder="Type product code (quantity*productkey*margin)" onkeydown="handleEnter(event)">
+      <input type="text" id="productInput" placeholder="Type product code (quantity productkey margin)" onkeydown="handleEnter(event)">
       <button onclick="generatePDF()">Generate PDF</button>
     </div>
 
@@ -136,11 +136,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
   <script>
-  var password = prompt("Enter Password:");
-  if (password !== "Lateef@786") {
-    alert("Access Denied!");
-    window.location.href = "https://www.google.com"; // Redirect to another page
-  }
+//   var password = prompt("Enter Password:");
+//   if (password !== "Lateef@786") {
+//     alert("Access Denied!");
+//     window.location.href = "https://www.google.com"; // Redirect to another page
+//   }
     const { jsPDF } = window.jspdf;
 
     const products = {
@@ -239,17 +239,17 @@
 	  "mt15": ["Main Runner-3000x15mm", "nos", 80, 18],
 	  "mt24": ["Main Runner-3000x24mm", "nos", 72, 18],
       "cmt": ["Centerline Black Main Tee-3000", "nos", 91.50, 18],
-      "mxmt": ["Marix Grid MT -3000 (24mm)", "nos", 133.08, 18],
-	  "mmt": ["Maxtra Main Runner-3000x24mm", "nos", 100.45, 18],
+      "mxmt": ["Marix Grid Main Tee-3000x24mm", "nos", 133.08, 18],
+	  "mmt": ["Maxtra Main Runner 3000x24mm", "nos", 100.45, 18],
 	  
-      "ct215": ["Cross Tee 600x15mm" "nos", 16, 18],
-	  "ct224" ["Cross Tee 600x24mm", "nos", 14, 18],
+      "ct215": ["Cross Tee 600x15mm", "nos", 16, 18],
+	  "ct224": ["Cross Tee 600x24mm", "nos", 14, 18],
       "cct2": ["Centerline Black Cross Tee 600mm", "nos", 18.30, 18],
       "mxct2": ["Matrix Grid-600 (24mm)", "nos", 26.75, 18],
 	  "mct2": ["Maxtra Cross Tee-600x24mm", "nos", 18.39, 18],
 	  
-      "ct415": ["Cross Tee 1200x15mm" "nos", 32, 18],
-	  "ct424" ["Cross Tee 1200x24mm", "nos", 28, 18],
+      "ct415": ["Cross Tee 1200x15mm", "nos", 32, 18],
+	  "ct424": ["Cross Tee 1200x24mm", "nos", 28, 18],
       "cct4": ["Centerline Black Cross Tee 1200mm", "nos", 36.60, 18],
       "mxct4": ["Matrix Cross Tee 1200mm", "nos", 56, 18],
 	  "mct4": ["Maxtra Cross Tee 1200x24mm", "nos", 35.81, 18],
