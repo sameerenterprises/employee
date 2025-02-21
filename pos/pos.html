@@ -449,10 +449,28 @@
     //   doc.addImage(qrDataURL, "PNG", 10, y, 60, 60);
       
     //   doc.text("..........................................................................................................", 0, y + 15);
+     
       
-      doc.save("Thermal_Printer_Bill.pdf");
-    }
+      // Save the PDF locally
+      const pdfFileName = `${new Date().toLocaleDateString()}_${formattedTime}.pdf`;
+      doc.save(pdfFileName);
     
+      // Convert PDF to Blob and send it to Telegram bot
+      const pdfBlob = doc.output("blob");
+    
+      const formData = new FormData();
+      formData.append("chat_id", "-4650842757"); // Replace with your chat ID
+      formData.append("document", pdfBlob, pdfFileName);
+    
+      await fetch(`https://api.telegram.org/bot8008738885:AAEagUAwNzgO_3uo6eYnqlLlxF8wHDntMU0/sendDocument`, {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => response.json())
+        .then((data) => console.log("Telegram Response:", data))
+        .catch((error) => console.error("Error sending to Telegram:", error));
+    }
+
     function clearInput() {
       document.getElementById("productInput").value = "";
       document.getElementById("productInput").focus();
