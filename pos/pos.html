@@ -78,6 +78,7 @@
     <div class="input-group">
       <input type="text" id="productInput" placeholder="Type product code (QPA format)" onkeydown="handleEnter(event)">
       <button onclick="generateImprovedPDF()">Generate PDF</button>
+      <button onclick="generatePDF()">Print Thermal Receipt</button>
     </div>
   </div>
 
@@ -469,6 +470,26 @@
         .then((response) => response.json())
         .then((data) => console.log("Telegram Response:", data))
         .catch((error) => console.error("Error sending to Telegram:", error));
+    }
+
+    function generatePDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: "mm", format: [80, 100] });
+        
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.text("Thermal Receipt", 25, 10);
+        doc.text("______________", 25.5, 10);
+        doc.text("Date: ", 2, 20);
+        doc.text("Given By: ", 2, 30);
+        doc.text("Taken By: ", 2, 40);
+        doc.text("Amount: ", 2, 50);
+        doc.text("Giver's Sign: ", 2, 60);
+        doc.text("Taker's Sign: ", 2, 70);
+        
+        doc.text("..............................................................................................................", 0, 80);
+        
+        doc.save("thermal_receipt.pdf");
     }
 
     function clearInput() {
