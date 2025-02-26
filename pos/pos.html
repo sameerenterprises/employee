@@ -453,7 +453,7 @@
      
       
       // Save the PDF locally
-      const pdfFileName = `${new Date().toLocaleDateString()}_${formattedTime}.pdf`;
+      const pdfFileName = `${total}.pdf`;
       doc.save(pdfFileName);
     
       // Convert PDF to Blob and send it to Telegram bot
