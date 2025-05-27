@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thermal Printer Bill</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      width: 90%;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    input {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      width: calc(100% - 22px);
+    }
+    .input-group {
+      margin-bottom: 20px;
+    }
+    #outputTable, #productReferenceTable {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    #outputTable th, #outputTable td, #productReferenceTable th, #productReferenceTable td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+      word-wrap: break-word;
+      white-space: normal;
+    }
+    #outputTable th, #productReferenceTable th {
+      background-color: #f2f2f2;
+    }
+    .reference-container {
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Thermal Printer Bill</h1>
+    
+    <div class="input-group">
+      <input type="text" id="partyInfo" placeholder="Party Information">
+    </div>
+
+    <!-- Table Section -->
+    <table id="outputTable">
+      <thead>
+        <tr>
+          <th>Product Name</th>
+          <th>Quantity</th>
+          <th>Rate (₹)</th>
+          <th>Total (₹)</th>
+        </tr>
+      </thead>
+      <tbody id="output"></tbody>
+    </table>
+
+    <!-- Input Section -->
+    <div class="input-group">
+      <input type="text" id="productInput" placeholder="Type product code (QPA format)" onkeydown="handleEnter(event)">
+      <button onclick="generateImprovedPDF()">Generate PDF</button>
+      <!--<button onclick="generatePDF()">Print Thermal Receipt</button>-->
+    </div>
+  </div>
+
+    <!-- Product Reference Section -->
+    <div class="reference-container">
+      <h2>Product Reference</h2>
+      <table id="productReferenceTable">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Product Name</th>
+            <th>Unit</th>
+            <th>Price (₹)</th>
+          </tr>
+        </thead>
+        <tbody id="productReference"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <script>
+    const products = {
+      "b": ["Board 6'4'12.5", "nos", 330],
+      "gb": ["G-Board 6'4'12.5", "nos", 430],
+      "hb648": ["H-Board 6'4'8", "nos", 750],
+      "hb8412": ["H-Board 8'4'12", "nos", 1540],
+      "gmr": ["MR-Board 6'4'12.5", "nos", 870],
+      "gfr": ["FR-Board 6'4'12.5", "nos", 850],
+      "e646": ["E-Board 6'4'6", "nos", 450],
+      "e648": ["E-Board 6'4'8", "nos", 550],
+      "e8412": ["E-Board 8'4'12", "nos", 1720],
+      "pops": ["POP Sheet 2x3x10", "nos", 65],
+      
+      "pa": ["Patti 8'", "nos", 70],
+      "mpa": ["Magnic Patti 8'", "nos", 105],
+      "xpa": ["Xpert Patti 8'", "nos", 130],
+      "gpa": ["Gypserra Patti 12'", "nos", 430],
+      
+      "bo": ["Bottom 8'", "nos", 70],
+      "mbo": ["Magnic Bottom 8'", "nos", 105],
+      "xbo": ["Xpert Bottom 8'", "nos", 130],
+      "gbo": ["Gypserra Bottom 12'", "nos", 430],
+      
+      "pe": ["Perimeter 8'", "nos", 45],
+      "mpe": ["Magnic Perimeter 8'", "nos", 60],
+      "xpe": ["Xpert Perimeter 8'", "nos", 95],
+      "gpe": ["Gypserra Perimeter 12'", "nos", 280],
+        
+      "al": ["Al 8'", "nos", 25],
+      "mal": ["Magnic Al 8'", "nos", 40],
+      "xal": ["Xpert Al 8'", "nos", 50],
+      "gal": ["Gypserra Al 12'", "nos", 150],
+      
+      "gp": ["Gypsum Plaster", "bg", 200],
+      "jc": ["G-Easi Fill 90", "bg", 550],
+      "xgp25": ["Xpert Plaster 25KG", "bg", 300],
+      "xgp20": ["Xpert Plaster 20KG", "bg", 240],
+      "e25": ["Elite 100 - 25kg", "bg", 340],
+      "emr25": ["Elite MR - 25kg", "bg", 380],
+      "rm10": ["Readymix 10kg", "bg", 250],
+
+      "ft": ["Fiber Tape", "roll", 100],
+      "gft": ["G-Fiber Tape", "roll", 230],
+      "gpt": ["G-Paper Tape", "roll", 230],
+        
+      "ds": ["Screw 1inch", "box", 200],
+      "ds1.5": ["Screw 1.5inch", "box", 200],
+      "gds": ["G-Screw 1inch", "box", 600],
+      "gds1.5": ["G-Screw 1.5inch", "box", 380],
+      "gds2": ["G-Screw 2inch", "box", 550],
+      "mtm": ["MTM Screw 8x13", "box", 190],
+      "gmtm": ["G-MTM Screw 4.2x13", "box", 520],
+      "gbc": ["G-Butterfly Clip", "nos", 14],
+      "rp": ["Rawl Plug \n (100 nos/pkt)","nos", 300],
+      "fsnr": ["Fasterner", "nos", 200],
+
+      "cc": ["Connecting Clip", "pkt", 180],
+      "gcc": ["G-Connecting Clip", "pkt", 640],
+      "sc": ["Soffit Cleate", "nos", 200],
+      "gsc": ["G-Soffit Cleate", "pkt", 270],
+
+      "gsd": ["G-Sadoline", "nos", 160],
+      "gab": ["G-Angle Bead", "nos", 160],
+
+      "gbd10": ["G-Bondit 10kg", "kg", 1600],
+      "ggp20": ["G-Gyplaster 10kg", "bg", 1200],
+      "dcbd10": ["DC Bond 10kg", "bg", 1000],
+
+      "mt": ["Main Tee", "nos", 95],
+      "mmt": ["Maxtra Main Tee", "nos", 0],
+      
+      "ct2": ["Cross Tee 2ft", "nos", 20],
+      "mct2": ["Maxtra CT 2ft", "nos", 28],
+      
+      "ct4": ["Cross Tee 4ft", "nos", 40],
+      "mct4": ["Maxtra CT 4ft", "nos", 56],
+      
+      "wal": ["Wall Angle", "nos", 80],
+      "mwal": ["Maxtra Wall Angle", "nos", 100],
+      
+      "td450": ["Trap Door 450x450", "nos", 2000],
+      
+      "gw12": ["Glasswool 12x50", "nos", 3200],
+      "gw16": ["Glasswool 16x50", "nos", 3400],
+      "gw24": ["Glasswool 24x50", "nos", 4800],
+      
+      "gddt": ["Dew Drop Tiles \n (10 nos/box)", "nos", 1000],
+      "ggt": ["Granular Tiles \n (10 nos/box)", "nos", 1000],
+      "lpht": ["Laban Tiles \n (14 nos/box)", "nos", 1750],
+      "et": ["Everest Tiles \n (10 nos/box)", "nos", 1000],
+
+      "l": ["Loading", "", 0],
+      "u": ["Unloading", "", 0],
+      "lu": ["Loading & Unloading", "", 0],
+      "t": ["Transport", "", 0],
+      "d": ["Discount", "", 0],
+    };
+    
+    let customProducts = {};
+    
+    // Populate product reference table
+    function populateProductReference() {
+      const referenceTableBody = document.getElementById("productReference");
+      for (const code in products) {
+        const [name, unit, price] = products[code];
+        const row = `
+          <tr>
+            <td>${code}</td>
+            <td>${name}</td>
+            <td>${unit}</td>
+            <td>₹${price}</td>
+          </tr>`;
+        referenceTableBody.insertAdjacentHTML("beforeend", row);
+      }
+    }
+    
+    populateProductReference();
+
+    let total = 0;
+    let history = [];
+
+    function addProduct() {
+      const input = document.getElementById("productInput").value.trim().replace(/ /g, '*');
+      if (input === "c") {
+        clearAll();
+        return;
+      }
+      
+      if (input.startsWith('*')) {
+        const customProductName = input.slice(1);
+        if (customProductName) {
+          customProducts[customProductName] = [customProductName, "nos", 0];
+          alert(`Custom product "${customProductName}" added. Now enter quantity and rate in the format: quantity*${customProductName}*rate`);
+        }
+        clearInput();
+        return;
+      }
+
+      const [quantityStr, productCode, amountStr] = input.split("*");
+      const quantity = quantityStr ? parseInt(quantityStr) : 10; // Default quantity is 10
+      const amount = amountStr ? parseInt(amountStr) : 0;
+
+      const productDetails = products[productCode] || customProducts[productCode];
+
+      if (!productDetails) {
+        alert("Invalid product code!");
+        clearInput();
+        return;
+      }
+
+      if (quantity === 0) {
+        removeProduct(productCode);
+        clearInput();
+        return;
+      }
+
+    //   const productDetails = products[productCode];
+      const productName = productDetails[0];
+      const pricePerUnit = amount === 0 ? productDetails[2] : amount;
+      const unit = productDetails[1]; // Fetch the correct unit
+      const newpricePerUnit = quantity == 1 && unit == "" ? "" : `${pricePerUnit}`;
+      const displayQuantity = quantity == 1 && unit == "" ? "" : `${quantity}`;
+    //   const displayQuantity = quantity > 1 ? `${quantity} nos` : ""; // Fixed quantity logic
+      const finalAmount = quantity * pricePerUnit;
+
+      const existingIndex = history.findIndex(item => item.code === productCode);
+      if (existingIndex !== -1) {
+        const existingItem = history[existingIndex];
+        total -= existingItem.finalAmount;
+        history[existingIndex] = { code: productCode, name: productName, quantity, displayQuantity, newpricePerUnit, finalAmount };
+      } else {
+        history.push({ code: productCode, name: productName, quantity, displayQuantity, newpricePerUnit, finalAmount });
+      }
+
+      total += finalAmount;
+
+      renderTable();
+      clearInput();
+    }
+
+    function removeProduct(productCode) {
+      const productIndex = history.findIndex(item => item.code === productCode);
+      if (productIndex === -1) {
+        alert("Product not found!");
+        return;
+      }
+
+      const removedItem = history.splice(productIndex, 1)[0];
+      total -= removedItem.finalAmount;
+
+      renderTable();
+    }
+
+    function renderTable() {
+      const outputTableBody = document.getElementById("output");
+      outputTableBody.innerHTML = "";
+
+      history.forEach(item => {
+        const row = `
+          <tr>
+            <td>${item.name}</td>
+            <td>${item.displayQuantity}</td>
+            <td>${item.newpricePerUnit}</td>
+            <td>${item.finalAmount}</td>
+          </tr>`;
+        outputTableBody.insertAdjacentHTML("beforeend", row);
+      });
+
+      const totalRow = `
+        <tr>
+          <td colspan="3" style="text-align: right; font-weight: bold;">Total</td>
+          <td style="font-weight: bold;">₹${total}</td>
+        </tr>`;
+      outputTableBody.insertAdjacentHTML("beforeend", totalRow);
+    }
+
+    function clearAll() {
+      total = 0;
+      history = [];
+      document.getElementById("output").innerHTML = "";
+    }
+
+    function clearInput() {
+      const input = document.getElementById("productInput");
+      input.value = "";
+      input.focus();
+    }
+
+    async function generateImprovedPDF() {
+      const { jsPDF } = window.jspdf;
+      const party = document.getElementById("partyInfo").value.trim() || "";
+    
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+    
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const formattedTime = `${hours}:${minutes}`;
+    
+      // === Header ===
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.setTextColor(40, 40, 140); // Deep blue
+      doc.text("RECEIPT", 105, 20, { align: "center" });
+    
+      // === Metadata (Date, Time, Info) ===
+      doc.setFontSize(12);
+      doc.setTextColor(0);
+      doc.text(`Date: ${new Date().toLocaleDateString()}`, 150, 30);
+      doc.text(`Time: ${formattedTime}`, 150, 36);
+      doc.text(`Customer Info: `, 20, 36);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${party}`, 50, 36);
+    
+      // === Table Header ===
+      let y = 50;
+      doc.setFillColor(230, 230, 250); // Lavender
+      doc.rect(20, y, 170, 10, 'F'); // Header row background
+    
+      doc.setFontSize(12);
+      doc.setTextColor(0);
+      doc.setFont("helvetica", "bold");
+      doc.text("Product", 22, y + 7);
+      doc.text("Qty", 105, y + 7);
+      doc.text("Rate", 135, y + 7);
+      doc.text("Total", 165, y + 7);
+    
+      // === Table Body ===
+      y += 16;
+      const rowHeight = 10;
+    
+      doc.setFont("helvetica", "normal");
+      
+        history.forEach((item, index) => {
+          // Optional: draw alternating row background
+          if (index % 2 === 1) {
+            doc.setFillColor(245, 245, 245); // light grey
+            doc.rect(20, y - 6, 170, rowHeight, 'F');
+          }
+        
+          // Draw text content
+          doc.setTextColor(0); // black
+          doc.text(String(item.name), 22, y);
+          doc.text(String(item.displayQuantity), 105, y);
+          doc.text(String(item.newpricePerUnit), 135, y);
+          doc.text(String(item.finalAmount), 165, y);
+        
+          y += rowHeight;
+        });
+
+    
+      // === Total Section ===
+      y += 5;
+      doc.setDrawColor(150, 150, 150);
+      doc.line(20, y, 190, y); // Line above total
+    
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.setTextColor(0);
+      doc.text("Total", 135, y + 10);
+      doc.text(`${total}`, 165, y + 10);
+    
+      // === Footer ===
+      y += 30;
+      doc.setFontSize(11);
+      doc.setTextColor(80);
+    //   doc.setFont("helvetica", "normal");
+    //   doc.text("Contact: 9022405221", 105, y, { align: "center" });
+    
+      // === Save PDF ===
+      doc.save("Bill.pdf");
+    }
+    
+
+
+    function clearInput() {
+      document.getElementById("productInput").value = "";
+      document.getElementById("productInput").focus();
+    }
+
+
+    function handleEnter(event) {
+      if (event.key === "Enter") {
+        addProduct();
+      }
+    }
+  </script>
+</body>
+</html>
