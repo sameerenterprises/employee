@@ -115,24 +115,24 @@
       "pops": ["POP Sheet 2'x3'x10mm", "nos", 65],
       
       "pa": ["Patti 8'", "nos", 70],
-      "mpa": ["Magnic Ceiling Section 8'", "nos", 105],
-      "xpa": ["Xpert Ceiling Section 8'", "nos", 130],
-      "gpa": ["Gypserra Ceiling Section 12'", "nos", 430],
+      "mpa": ["Magnic Ceiling Section 2440mm", "nos", 105],
+      "xpa": ["Xpert Ceiling Section 2440mm", "nos", 130],
+      "gpa": ["Gypserra Ceiling Section 3660mm", "nos", 430],
       
       "bo": ["Bottom 8'", "nos", 70],
-      "mbo": ["Magnic Intermediate 8'", "nos", 105],
-      "xbo": ["Xpert Intermediate 8'", "nos", 130],
-      "gbo": ["Gypserra Intermediate 12'", "nos", 430],
+      "mbo": ["Magnic Intermediate 2440mm", "nos", 105],
+      "xbo": ["Xpert Intermediate 2440mm", "nos", 130],
+      "gbo": ["Gypserra Intermediate 3660mm", "nos", 430],
       
       "pe": ["Perimeter 8'", "nos", 45],
-      "mpe": ["Magnic Perimeter 8'", "nos", 60],
-      "xpe": ["Xpert Perimeter 8'", "nos", 95],
-      "gpe": ["Gypserra Perimeter 12'", "nos", 280],
+      "mpe": ["Magnic Perimeter 2440mm", "nos", 60],
+      "xpe": ["Xpert Perimeter 2440mm", "nos", 95],
+      "gpe": ["Gypserra Perimeter 3660mm", "nos", 280],
         
       "al": ["Al 8'", "nos", 25],
-      "mal": ["Magnic Ceiling Angle 8'", "nos", 40],
-      "xal": ["Xpert Ceiling Angle 8'", "nos", 50],
-      "gal": ["Gypserra Ceiling Angle 12'", "nos", 150],
+      "mal": ["Magnic Ceiling Angle 2440mm", "nos", 40],
+      "xal": ["Xpert Ceiling Angle 2440mm", "nos", 50],
+      "gal": ["Gypserra Ceiling Angle 3660mm", "nos", 150],
       
       "gp": ["Gypsum Plaster", "bg", 200],
       "jc": ["Gyproc Easi Fill 90", "bg", 550],
@@ -270,9 +270,9 @@
       if (existingIndex !== -1) {
         const existingItem = history[existingIndex];
         total -= existingItem.finalAmount;
-        history[existingIndex] = { code: productCode, name: productName, quantity, displayQuantity, newpricePerUnit, finalAmount };
+        history[existingIndex] = { code: productCode, name: productName, unit, quantity, displayQuantity, newpricePerUnit, finalAmount };
       } else {
-        history.push({ code: productCode, name: productName, quantity, displayQuantity, newpricePerUnit, finalAmount });
+        history.push({ code: productCode, name: productName, unit, quantity, displayQuantity, newpricePerUnit, finalAmount });
       }
 
       total += finalAmount;
@@ -355,22 +355,22 @@
       doc.setTextColor(0);
       doc.text(`Date: ${new Date().toLocaleDateString()}`, 150, 30);
       doc.text(`Time: ${formattedTime}`, 150, 36);
-      doc.text(`Customer Info: `, 20, 36);
+      doc.text(`Customer Info: `, 20, 45);
       doc.setFont("helvetica", "normal");
-      doc.text(`${party}`, 50, 36);
+      doc.text(`${party}`, 50, 45);
     
       // === Table Header ===
       let y = 50;
       doc.setFillColor(230, 230, 250); // Lavender
-      doc.rect(20, y, 170, 10, 'F'); // Header row background
+      doc.rect(10, y, 180, 10, 'F'); // Header row background
     
       doc.setFontSize(12);
       doc.setTextColor(0);
       doc.setFont("helvetica", "bold");
-      doc.text("Product", 22, y + 7);
-      doc.text("Qty", 105, y + 7);
+      doc.text("Product", 15, y + 7);
+      doc.text("Qty", 100, y + 7);
       doc.text("Rate", 135, y + 7);
-      doc.text("Total", 165, y + 7);
+      doc.text("Total", 170, y + 7);
     
       // === Table Body ===
       y += 16;
@@ -382,24 +382,23 @@
           // Optional: draw alternating row background
           if (index % 2 === 1) {
             doc.setFillColor(245, 245, 245); // light grey
-            doc.rect(20, y - 6, 170, rowHeight, 'F');
+            doc.rect(10, y - 6, 180, rowHeight, 'F');
           }
         
           // Draw text content
           doc.setTextColor(0); // black
-          doc.text(String(item.name), 22, y);
-          doc.text(String(item.displayQuantity), 105, y);
+          doc.text(String(item.name), 15, y);
+          doc.text(String(item.displayQuantity + " " + item.unit), 100, y);
           doc.text(String(item.newpricePerUnit), 135, y);
-          doc.text(String(item.finalAmount), 165, y);
+          doc.text(String(item.finalAmount), 170, y);
         
           y += rowHeight;
         });
 
-    
+      y -= rowHeight/2;
       // === Total Section ===
-      y += 5;
       doc.setDrawColor(150, 150, 150);
-      doc.line(20, y, 190, y); // Line above total
+      doc.line(10, y, 190, y); // Line above total
     
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
