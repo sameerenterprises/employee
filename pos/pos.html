@@ -67,8 +67,8 @@
         <tr>
           <th>Product Name</th>
           <th>Quantity</th>
-          <th>Rate (₹)</th>
-          <th>Total (₹)</th>
+          <th>Rate</th>
+          <th>Total</th>
         </tr>
       </thead>
       <tbody id="output"></tbody>
@@ -312,7 +312,7 @@
         const row = `
           <tr>
             <td>${item.name}</td>
-            <td>${item.displayQuantity}</td>
+            <td>${item.displayQuantity} ${item.unit}</td>
             <td>${item.newpricePerUnit}</td>
             <td>${item.finalAmount}</td>
           </tr>`;
