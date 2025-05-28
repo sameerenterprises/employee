@@ -363,7 +363,7 @@
       // === Metadata (Date, Time, Info) ===
       doc.setFontSize(12);
       doc.setTextColor(0);
-      doc.text(`Date: ${new Date().toLocaleDateString()}`, 150, 30);
+      doc.text(`Date: ${new Date().toLocaleDateString('en-GB')}`, 150, 30);
       doc.text(`Time: ${formattedTime}`, 150, 36);
       doc.text(`Customer Info:`, 15, 45);
       doc.setFont("helvetica", "normal");
