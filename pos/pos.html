@@ -114,25 +114,33 @@
       "e8412": ["Everest Board 8'x4'x12mm", "nos", 1720],
       "pops": ["POP Sheet 2'x3'x10mm", "nos", 65],
       
-      "pa": ["Patti 8'", "nos", 70],
+      "pa": ["GI Patti 8'", "nos", 70],
       "mpa": ["Magnic Ceiling Section 2440mm", "nos", 105],
       "xpa": ["Xpert Ceiling Section 2440mm", "nos", 130],
       "gpa": ["Gypserra Ceiling Section 3660mm", "nos", 430],
       
-      "bo": ["Bottom 8'", "nos", 70],
+      "bo": ["GI Bottom 8'", "nos", 70],
       "mbo": ["Magnic Intermediate 2440mm", "nos", 105],
       "xbo": ["Xpert Intermediate 2440mm", "nos", 130],
       "gbo": ["Gypserra Intermediate 3660mm", "nos", 430],
       
-      "pe": ["Perimeter 8'", "nos", 45],
+      "pe": ["GI Perimeter 8'", "nos", 45],
       "mpe": ["Magnic Perimeter 2440mm", "nos", 60],
       "xpe": ["Xpert Perimeter 2440mm", "nos", 95],
       "gpe": ["Gypserra Perimeter 3660mm", "nos", 280],
         
-      "al": ["Al 8'", "nos", 25],
+      "al": ["GI Al 8'", "nos", 25],
       "mal": ["Magnic Ceiling Angle 2440mm", "nos", 40],
       "xal": ["Xpert Ceiling Angle 2440mm", "nos", 50],
       "gal": ["Gypserra Ceiling Angle 3660mm", "nos", 150],
+      
+      "fl12": ["GI Floor Channel 12'", "nos", 130],
+      "fl10": ["GI Floor Channel 10'", "nos", 115],
+      "xfl": ["Xpert Floor Channel 12'", "nos", 260],
+      
+      "st12": ["GI Stud Channel 12'", "nos", 160],
+      "st10": ["GI Stud Channel 10'", "nos", 130],
+      "xst": ["Xpert Stud Channel 12'", "nos", 270],
       
       "gp": ["Gypsum Plaster", "bg", 200],
       "jc": ["Gyproc Easi Fill 90", "bg", 550],
@@ -140,7 +148,7 @@
       "xgp20": ["Gyproc Xpert Plaster 20KG", "bg", 240],
       "e25": ["Gyproc Elite 100 - 25kg", "bg", 340],
       "emr25": ["Gyproc Elite MR - 25kg", "bg", 380],
-      "rm10": ["Readymix 10kg", "bg", 250],
+      "rm10": ["Readymix 10kg", "bkt", 250],
 
       "ft": ["Fiber Tape", "roll", 100],
       "gft": ["Gyproc Fiber Tape", "roll", 230],
@@ -154,20 +162,20 @@
       "mtm": ["Metal to Metal Screw 8x13", "box", 190],
       "gmtm": ["Gyporc Metal to Metal Screw 4.2x13", "box", 520],
       "gbc": ["Gyproc Butterfly Clip", "nos", 14],
-      "rp": ["Rawl Plug (100 nos/pkt)","nos", 300],
-      "fsnr": ["Fasterner", "nos", 200],
+      "rp": ["Rawl Plug (100 nos/pkt)","pkt", 300],
+      "fsnr": ["Fasterner", "pkt", 200],
 
       "cc": ["Connecting Clip", "pkt", 180],
       "gcc": ["Gyproc Connecting Clip", "pkt", 640],
       "sc": ["Soffit Cleate", "nos", 200],
       "gsc": ["Gyproc Soffit Cleate", "pkt", 270],
 
-      "gsd": ["Gyproc Sadoline Section", "nos", 160],
-      "gab": ["Gyproc Angle Bead", "nos", 160],
+      "gsd": ["Gyproc Sadoline Section 8'", "nos", 160],
+      "gab": ["Gyproc Angle Bead 8'", "nos", 160],
 
-      "gbd10": ["Gyproc Bondit 10kg", "kg", 1600],
-      "ggp20": ["Gyproc Gyplaster 10kg", "bg", 1200],
-      "dcbd10": ["DC Bond 10kg", "bg", 1000],
+      "gbd": ["Gyproc Bondit", "kg", 160],
+      "ggp": ["Gyproc Gyplaster", "kg", 120],
+      "dcbd": ["DC Bond", "kg", 100],
 
       "mt": ["Main Tee", "nos", 95],
       "mmt": ["Maxtra Main Tee", "nos", 0],
@@ -181,7 +189,9 @@
       "wal": ["Wall Angle", "nos", 80],
       "mwal": ["Maxtra Wall Angle", "nos", 100],
       
+      "td300": ["Trap Door 300x300", "nos", 1650],
       "td450": ["Trap Door 450x450", "nos", 2000],
+      "td600": ["Trap Door 600x600", "nos", 2200],
       
       "gw12": ["Glasswool 12x50", "nos", 3200],
       "gw16": ["Glasswool 16x50", "nos", 3400],
@@ -287,7 +297,7 @@
         alert("Product not found!");
         return;
       }
-
+ 
       const removedItem = history.splice(productIndex, 1)[0];
       total -= removedItem.finalAmount;
 
@@ -355,9 +365,9 @@
       doc.setTextColor(0);
       doc.text(`Date: ${new Date().toLocaleDateString()}`, 150, 30);
       doc.text(`Time: ${formattedTime}`, 150, 36);
-      doc.text(`Customer Info: `, 20, 45);
+      doc.text(`Customer Info:`, 15, 45);
       doc.setFont("helvetica", "normal");
-      doc.text(`${party}`, 50, 45);
+      doc.text(`${party}`, 48, 45);
     
       // === Table Header ===
       let y = 50;
@@ -403,8 +413,8 @@
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
       doc.setTextColor(0);
-      doc.text("Total", 135, y + 10);
-      doc.text(`${total}`, 165, y + 10);
+      doc.text("Total", 135, y + 8);
+      doc.text(`${total}`, 170, y + 8);
     
       // === Footer ===
       y += 30;
