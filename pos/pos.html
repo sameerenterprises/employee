@@ -77,6 +77,8 @@
     <!-- Input Section -->
     <div class="input-group">
       <input type="text" id="productInput" placeholder="Type product code (QPA format)" onkeydown="handleEnter(event)">
+      <div id="productInfoPreview" style="font-weight: bold; color: green; margin-top: 5px;"></div>
+      <br></br>
       <button onclick="generateImprovedPDF()">Generate PDF</button>
       <!--<button onclick="generatePDF()">Print Thermal Receipt</button>-->
     </div>
@@ -445,6 +447,38 @@
         addProduct();
       }
     }
+    
+    document.getElementById("productInput").addEventListener("input", showProductInfo);
+
+    function showProductInfo() {
+      const input = document.getElementById("productInput").value.trim();
+      const preview = document.getElementById("productInfoPreview");
+    
+      if (!input.includes(" ")) {
+        preview.textContent = "";
+        return;
+      }
+    
+      const parts = input.split(" ");
+      const productCode = parts.length === 2 ? parts[1] : (parts.length === 3 ? parts[1] : "");
+    
+      if (!productCode) {
+        preview.textContent = "";
+        return;
+      }
+    
+      const product = products[productCode] || customProducts[productCode];
+    
+      if (product) {
+        const [name, , price] = product;
+        preview.textContent = `${productCode}: ${name} - ₹${price}`;
+        preview.style.color = "green";
+      } else {
+        preview.textContent = "Invalid product code!";
+        preview.style.color = "red";
+      }
+    }
+
   </script>
 </body>
 </html>
