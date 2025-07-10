@@ -77,6 +77,7 @@
     <!-- Input Section -->
     <div class="input-group">
       <input type="text" id="productInput" placeholder="Type product code (QPA format)" onkeydown="handleEnter(event)">
+      <div id="suggestions" style="position: relative;"><ul id="suggestionList" style="list-style: none; margin: 0; padding: 0; background: white; border: 1px solid #ccc; max-height: 200px; overflow-y: auto; position: absolute; width: 100%; z-index: 1000;"></ul></div>
       <div id="productInfoPreview" style="font-weight: bold; color: green; margin-top: 5px;"></div>
       <br></br>
       <button onclick="generateImprovedPDF()">Generate PDF</button>
@@ -256,7 +257,7 @@
         return;
       }
 
-      const [quantityStr, productCode, amountStr] = input.split("*");
+      const [productCode, quantityStr, amountStr] = input.split("*");
       const quantity = quantityStr ? parseInt(quantityStr) : 10; // Default quantity is 10
       const amount = amountStr ? parseInt(amountStr) : 0;
 
@@ -469,15 +470,53 @@
     
       const product = products[productCode] || customProducts[productCode];
     
-      if (product) {
-        const [name, , price] = product;
-        preview.textContent = `${productCode}: ${name} - ₹${price}`;
-        preview.style.color = "green";
-      } else {
-        preview.textContent = "Invalid product code!";
-        preview.style.color = "red";
-      }
+    //   if (product) {
+    //     const [name, , price] = product;
+    //     preview.textContent = `${productCode}: ${name} - ₹${price}`;
+    //     preview.style.color = "green";
+    //   } else {
+    //     preview.textContent = "Invalid product code!";
+    //     preview.style.color = "red";
+    //   }
     }
+    
+    const inputField = document.getElementById("productInput");
+    const suggestionList = document.getElementById("suggestionList");
+    
+    inputField.addEventListener("input", () => {
+      const query = inputField.value.trim().toLowerCase();
+      suggestionList.innerHTML = "";
+    
+      if (!query) return;
+    
+      const suggestions = Object.entries(products).filter(([code, [name]]) =>
+        code.toLowerCase().includes(query) || name.toLowerCase().includes(query)
+      );
+    
+      suggestions.slice(0, 10).forEach(([code, [name, unit, price]]) => {
+        const item = document.createElement("li");
+        item.textContent = `${code} - ${name} (₹${price})`;
+        item.style.padding = "5px 10px";
+        item.style.cursor = "pointer";
+    
+        item.addEventListener("click", () => {
+          inputField.value = `${code} `;
+          suggestionList.innerHTML = "";
+          inputField.focus();
+          showProductInfo(); // update preview info
+        });
+    
+        suggestionList.appendChild(item);
+      });
+    });
+    
+    // Hide suggestions when clicking outside
+    document.addEventListener("click", function (e) {
+      if (!document.getElementById("suggestions").contains(e.target)) {
+        suggestionList.innerHTML = "";
+      }
+    });
+
 
   </script>
 </body>
