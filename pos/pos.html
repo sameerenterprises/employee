@@ -489,9 +489,20 @@
     
       if (!query) return;
     
-      const suggestions = Object.entries(products).filter(([code, [name]]) =>
-        code.toLowerCase().includes(query) || name.toLowerCase().includes(query)
-      );
+      let suggestions;
+    
+      if (query.startsWith("/")) {
+        // Search only by product name (excluding the '/')
+        const nameQuery = query.slice(1);
+        suggestions = Object.entries(products).filter(([code, [name]]) =>
+          name.toLowerCase().includes(nameQuery)
+        );
+      } else {
+        // Search by code only
+        suggestions = Object.entries(products).filter(([code, [name]]) =>
+          code.toLowerCase().includes(query)
+        );
+      }
     
       suggestions.slice(0, 10).forEach(([code, [name, unit, price]]) => {
         const item = document.createElement("li");
@@ -509,6 +520,8 @@
         suggestionList.appendChild(item);
       });
     });
+
+
     
     // Hide suggestions when clicking outside
     document.addEventListener("click", function (e) {
