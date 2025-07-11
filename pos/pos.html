@@ -491,18 +491,19 @@
     
       let suggestions;
     
-      if (query.startsWith("/")) {
-        // Search only by product name (excluding the '/')
-        const nameQuery = query.slice(1);
-        suggestions = Object.entries(products).filter(([code, [name]]) =>
-          name.toLowerCase().includes(nameQuery)
-        );
-      } else {
-        // Search by code only
-        suggestions = Object.entries(products).filter(([code, [name]]) =>
-          code.toLowerCase().includes(query)
-        );
-      }
+    if (query.startsWith("/")) {
+      // Search by product code (excluding the '/')
+      const codeQuery = query.slice(1);
+      suggestions = Object.entries(products).filter(([code]) =>
+        code.toLowerCase().includes(codeQuery)
+      );
+    } else {
+      // Search by product name
+      suggestions = Object.entries(products).filter(([code, [name]]) =>
+        name.toLowerCase().includes(query)
+      );
+    }
+
     
       suggestions.slice(0, 10).forEach(([code, [name, unit, price]]) => {
         const item = document.createElement("li");
