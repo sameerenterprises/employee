@@ -530,19 +530,18 @@
       let suggestions;
     
     if (query.startsWith("/")) {
-      // Search by product code (excluding the '/')
-      const codeQuery = query.slice(1);
-      suggestions = Object.entries(products).filter(([code]) =>
-        code.toLowerCase().includes(codeQuery)
+      // Search by product name (excluding the '/')
+      const nameQuery = query.slice(1);
+      suggestions = Object.entries(products).filter(([code, [name]]) =>
+        name.toLowerCase().includes(nameQuery)
       );
     } else {
-      // Search by product name
-      suggestions = Object.entries(products).filter(([code, [name]]) =>
-        name.toLowerCase().includes(query)
+      // Search by product code
+      suggestions = Object.entries(products).filter(([code]) =>
+        code.toLowerCase().includes(query)
       );
     }
 
-    
       suggestions.slice(0, 10).forEach(([code, [name, unit, price]]) => {
         const item = document.createElement("li");
         item.textContent = `${code} - ${name} (₹${price})`;
