@@ -265,7 +265,7 @@
       }
 
       const [productCode, quantityStr, amountStr] = input.split("*");
-      const quantity = quantityStr ? parseFloat(parseFloat(quantityStr).toFixed(2)) : 10;
+      const quantity = quantityStr ? parseFloat(parseFloat(quantityStr).toFixed(2)) : 1;
       const amount = amountStr ? parseFloat(parseFloat(amountStr).toFixed(2)) : 0;
 
       const productDetails = products[productCode] || customProducts[productCode];
