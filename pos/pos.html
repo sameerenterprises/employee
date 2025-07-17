@@ -302,7 +302,7 @@
           gstTotal += (item.finalAmount * prod[3]) / 100;
         }
       });
-      calculatedAmount = Math.round((gstTotal / 2));
+      calculatedAmount = parseFloat((gstTotal / 2).toFixed(2));
     } else if (productCode === "igst") {
       let gstTotal = 0;
       history.forEach(item => {
@@ -311,7 +311,7 @@
           gstTotal += (item.finalAmount * prod[3]) / 100;
         }
       });
-      calculatedAmount = Math.round(gstTotal);
+      calculatedAmount = parseFloat(gstTotal.toFixed(2));
     } else if (productCode === "roff") {
       let tempTotal = total;
       const roffValue = Math.round(tempTotal) - tempTotal;
