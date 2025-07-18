@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Thermal Printer Bill</title>
+  <title>Proforma Invoice</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -55,7 +55,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>Thermal Printer Bill</h1>
+    <h1>Proforma Invoice</h1>
     
     <div class="input-group">
       <input type="text" id="partyInfo" placeholder="Party Information">
@@ -353,25 +353,74 @@
     function renderTable() {
       const outputTableBody = document.getElementById("output");
       outputTableBody.innerHTML = "";
-
+    
+      let calculatedTotal = 0;
+      let gstTotal = 0;
+    
+      // First pass to calculate item total and GST
       history.forEach(item => {
-        const row = `
+        if (!["cgst", "sgst", "igst", "roff"].includes(item.code)) {
+          calculatedTotal += item.finalAmount;
+    
+          const productInfo = products[item.code];
+          if (productInfo && productInfo[3]) {
+            gstTotal += (item.finalAmount * productInfo[3]) / 100;
+          }
+        }
+      });
+    
+      // Second pass: reinsert gst/roff with updated values if already used
+      let newHistory = [];
+    
+      history.forEach(item => {
+        if (["cgst", "sgst"].includes(item.code)) {
+          const gst = parseFloat((gstTotal / 2).toFixed(2));
+          item.finalAmount = gst;
+          newHistory.push(item);
+        } else if (item.code === "igst") {
+          const igst = parseFloat(gstTotal.toFixed(2));
+          item.finalAmount = igst;
+          newHistory.push(item);
+        } else if (item.code === "roff") {
+          const tempTotal = calculatedTotal + gstTotal;
+          const roffValue = Math.round(tempTotal) - tempTotal;
+          item.finalAmount = Math.round(roffValue * 100) / 100;
+          newHistory.push(item);
+        } else {
+          newHistory.push(item);
+        }
+      });
+    
+      history = newHistory;
+    
+      // Now render rows
+      let finalTotal = 0;
+    
+      history.forEach(item => {
+        outputTableBody.insertAdjacentHTML("beforeend", `
           <tr>
             <td>${item.name}</td>
             <td>${item.displayQuantity} ${item.unit}</td>
             <td>${item.newpricePerUnit}</td>
             <td>${item.finalAmount}</td>
-          </tr>`;
-        outputTableBody.insertAdjacentHTML("beforeend", row);
+          </tr>
+        `);
+    
+        finalTotal += item.finalAmount;
       });
-
-      const totalRow = `
+    
+      // Final total row
+      outputTableBody.insertAdjacentHTML("beforeend", `
         <tr>
           <td colspan="3" style="text-align: right; font-weight: bold;">Total</td>
-          <td style="font-weight: bold;">₹${total}</td>
-        </tr>`;
-      outputTableBody.insertAdjacentHTML("beforeend", totalRow);
+          <td style="font-weight: bold;">₹${finalTotal.toFixed(2)}</td>
+        </tr>
+      `);
+    
+      total = parseFloat(finalTotal.toFixed(2)); // update global total
     }
+
+
 
     function clearAll() {
       total = 0;
@@ -404,7 +453,7 @@
       doc.setFont("helvetica", "bold");
       doc.setFontSize(22);
       doc.setTextColor(40, 40, 140); // Deep blue
-      doc.text("RECEIPT", 105, 20, { align: "center" });
+      doc.text("Proforma Invoice", 105, 20, { align: "center" });
     
       // === Metadata (Date, Time, Info) ===
       doc.setFontSize(12);
