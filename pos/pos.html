@@ -88,6 +88,10 @@
       <div id="productInfoPreview" style="font-weight: bold; color: green; margin-top: 5px;"></div>
       <br></br>
       <button onclick="generateImprovedPDF()">Generate PDF</button>
+      <div id="savedBills" style="margin-top:20px;">
+      <h3>Saved Bills</h3>
+      <ul id="billList" style="list-style:none;padding:0;"></ul>
+    </div>
     </div>
   </div>
 
@@ -561,6 +565,99 @@
     
       // Save PDF
       doc.save("Bill.pdf");
+      
+      {
+          
+      }
+      const party = document.getElementById("partyInfo").value.trim();
+      if (!party && history.length === 0) {
+        alert("Cannot save empty bill!");
+        return;
+      }
+    
+      const billData = {
+        id: Date.now(), // unique ID
+        party: party,
+        items: history,
+        total: total
+      };
+    
+      let savedBills = JSON.parse(localStorage.getItem("savedBills")) || [];
+      savedBills.push(billData);
+    
+      localStorage.setItem("savedBills", JSON.stringify(savedBills));
+      renderSavedBills();
+      
+    }
+    
+    function renderSavedBills() {
+      const billList = document.getElementById("billList");
+      billList.innerHTML = "";
+    
+      let savedBills = JSON.parse(localStorage.getItem("savedBills")) || [];
+    
+      savedBills.forEach(bill => {
+        const li = document.createElement("li");
+        li.style.display = "flex";
+        li.style.justifyContent = "space-between";
+        li.style.alignItems = "center";
+        li.style.padding = "5px 0";
+        li.style.borderBottom = "1px solid #ccc";
+    
+        // Bill name
+        const billText = document.createElement("span");
+        billText.textContent = `${bill.party || "Unnamed Party"} - ₹${bill.total.toFixed(2)}`;
+        billText.style.cursor = "pointer";
+        billText.addEventListener("click", () => {
+          loadBill(bill.id);
+        });
+    
+        // Delete button
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "❌";
+        deleteBtn.style.marginLeft = "10px";
+        deleteBtn.style.cursor = "pointer";
+        deleteBtn.style.border = "none";
+        deleteBtn.style.background = "transparent";
+        deleteBtn.style.color = "red";
+        deleteBtn.style.fontSize = "16px";
+    
+        deleteBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          deleteBill(bill.id);
+        });
+    
+        li.appendChild(billText);
+        li.appendChild(deleteBtn);
+    
+        billList.appendChild(li);
+      });
+    }
+    
+    function loadBill(billId) {
+      let savedBills = JSON.parse(localStorage.getItem("savedBills")) || [];
+      const bill = savedBills.find(b => b.id === billId);
+    
+      if (!bill) {
+        alert("Bill not found!");
+        return;
+      }
+    
+      document.getElementById("partyInfo").value = bill.party;
+      history = bill.items;
+      total = bill.total;
+    
+      renderTable();
+    }
+    
+    function deleteBill(billId) {
+      let savedBills = JSON.parse(localStorage.getItem("savedBills")) || [];
+      savedBills = savedBills.filter(b => b.id !== billId);
+    
+      localStorage.setItem("savedBills", JSON.stringify(savedBills));
+      renderSavedBills();
+    }
+
     }
 
     function handleEnter(event) {
