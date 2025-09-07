@@ -583,7 +583,7 @@
       };
     
       let savedBills = JSON.parse(localStorage.getItem("savedBills")) || [];
-      savedBills.push(billData);
+      savedBills.unshift(billData); // 👈 latest bill at top
     
       localStorage.setItem("savedBills", JSON.stringify(savedBills));
       renderSavedBills();
