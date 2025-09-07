@@ -582,10 +582,20 @@
     
       let savedBills = JSON.parse(localStorage.getItem("savedBills")) || [];
       savedBills.unshift(billData); // 👈 latest bill at top
-    
-      localStorage.setItem("savedBills", JSON.stringify(savedBills));
-      renderSavedBills();
       
+      // ✅ Keep only last 100 bills
+      if (savedBills.length > 100) {
+        savedBills = savedBills.slice(0, 100);
+      }
+    
+      try {
+          localStorage.setItem("savedBills", JSON.stringify(savedBills));
+        } catch (e) {
+          alert("Storage is full! Please delete some old bills.");
+        }
+      renderSavedBills();
+      }
+
     }
     
     function renderSavedBills() {
@@ -604,7 +614,14 @@
     
         // Bill name
         const billText = document.createElement("span");
-        billText.textContent = `${bill.party || "Unnamed Party"} - ₹${bill.total.toFixed(2)}`;
+        // Format date and time from bill.id (timestamp)
+        const billDate = new Date(bill.id);
+        const dateStr = billDate.toLocaleDateString("en-GB"); // dd/mm/yyyy
+        const timeStr = billDate.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+        
+        billText.textContent = `${dateStr} ${timeStr} - ${bill.party || "Unnamed"} - ₹${bill.total.toFixed(2)}`;
+
+        // billText.textContent = `${bill.id} - ${bill.party || "Unnamed"} - ₹${bill.total.toFixed(2)}`;
         billText.style.cursor = "pointer";
         billText.addEventListener("click", () => {
           loadBill(bill.id);
@@ -654,8 +671,6 @@
     
       localStorage.setItem("savedBills", JSON.stringify(savedBills));
       renderSavedBills();
-    }
-
     }
 
     function handleEnter(event) {
@@ -732,6 +747,11 @@
       if (!document.getElementById("suggestions").contains(e.target)) {
         suggestionList.innerHTML = "";
       }
+    });
+    
+    // 👇 Restore saved bills on page load
+    window.addEventListener("DOMContentLoaded", () => {
+      renderSavedBills();
     });
   </script>
 </body>
