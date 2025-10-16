@@ -72,7 +72,7 @@
       <label for="paymentInfo"></label>
       <select id="paymentInfo">
         <option value="">None</option>
-        <option value="Name: Sameer Enterprises, Bank Name: Saraswat Bank Ltd, Account Number: 005500100004915, IFSC Code: SRCB0000005, Branch: Goregaon (W)">Saraswat Bank 4915</option>
+        <option value="Name: Sameer Enterprises, Bank Name: HDFC Bank Ltd, Account Number: 09982000000501, IFSC Code: HDFC0000998, Branch: Vikhroli (W)">HDFC Bank </option>
         <option value="Name: SFL Enterprises, UPID: sflenterprises1@oksbi">SFL UPI</option>
       </select>
     </div>
@@ -570,20 +570,45 @@
       doc.text(`${total}`, 170, y + 8);
     
       // Footer
-      y += 30;
+      y += 20;
       doc.setFontSize(11);
       doc.setTextColor(80);
       
     
     const formattedInfo = paymentInfo.replace(/, /g, "\n");
 
-    if (paymentInfo) {
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "normal");
-      doc.text(formattedInfo.split("\n"), 10, y); 
-    }
+    if (paymentInfo.includes("sflenterprises1@oksbi")) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(12);
+        doc.text(formattedInfo.split("\n"), 135, y); 
+        // Generate QR code for SFL UPI
+        const qr = new QRious({
+          value: `upi://pay?pa=sflenterprises1@oksbi&pn=SFL%20Enterprises&am=${total}&cu=INR`,
+          size: 80,
+        });
+        const qrDataURL = qr.toDataURL();
+        y += 8;
+        doc.addImage(qrDataURL, "PNG", 150, y, 30, 30);
     
+    } else if (paymentInfo.includes("Sameer Enterprises")) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(12);
+        doc.text(formattedInfo.split("\n"), 135, y); 
+        // Generate QR code for HDFC UPI
+        const qr = new QRious({
+          value: `upi://pay?pa=salarindiacorp@okhdfcbank&pn=Latif%20Chaudhary&am=${total}&cu=INR`,
+          size: 80,
+        });
+        const qrDataURL = qr.toDataURL();
+        y += 24;
+        doc.addImage(qrDataURL, "PNG", 150, y, 30, 30);
+    
+    } else {
+        Print formatted payment info as text only
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(12);
+        doc.text(formattedInfo.split("\n"), 135, y); 
+    }
       // Save PDF
       doc.save("Bill.pdf");
       
