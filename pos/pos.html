@@ -62,6 +62,11 @@
 <body>
   <div class="container">
     <h1>Proforma Invoice</h1>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <h3 id="billNumberDisplay" style="margin: 0;">Bill Number: </h3>
+      <button onclick="startNewBill()" style="padding: 5px 10px; cursor: pointer;">🆕 New Bill</button>
+    </div>
+
     
     <div class="input-group">
       <input type="text" id="partyInfo" placeholder="Party Information">
@@ -236,6 +241,19 @@
     let customProducts = {};
     let total = 0;
     let history = [];
+    
+    // 👇 ADD THIS HERE
+    let billNumber = 0;
+    
+    function generateBillNumber() {
+      // Get last used bill number from localStorage
+      const lastBillNumber = parseInt(localStorage.getItem("lastBillNumber") || "0", 10);
+      const newBillNumber = lastBillNumber + 1;
+      localStorage.setItem("lastBillNumber", newBillNumber);
+      billNumber = newBillNumber;
+      document.getElementById("billNumberDisplay").textContent = `Bill Number: ${String(billNumber).padStart(4, '0')}`;
+    }
+
 
     function addProduct() {
       const input = document.getElementById("productInput").value.trim().replace(/ /g, '*');
@@ -379,6 +397,26 @@
 
       renderTable();
     }
+    
+    function startNewBill() {
+      // Clear current bill data
+      history = [];
+      total = 0;
+    
+      // Clear input fields
+      document.getElementById("productInput").value = "";
+      document.getElementById("partyInfo").value = "";
+      document.getElementById("paymentInfo").selectedIndex = 0;
+    
+      // Clear the output table
+      document.getElementById("output").innerHTML = "";
+    
+      // Optionally scroll to top
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    
+      alert("New bill started!");
+    }
+    
 
     function renderTable() {
       const outputTableBody = document.getElementById("output");
@@ -476,9 +514,12 @@
     }
 
     async function generateImprovedPDF() {
+      // ✅ Generate a new bill number when PDF is created
+      generateBillNumber();
+    
       const { jsPDF } = window.jspdf;
       const party = document.getElementById("partyInfo").value.trim() || "";
-      const paymentInfo = document.getElementById("paymentInfo").value; // ✅ get payment info
+      const paymentInfo = document.getElementById("paymentInfo").value;
     
       const doc = new jsPDF({
         orientation: "portrait",
@@ -490,43 +531,42 @@
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
       const formattedTime = `${hours}:${minutes}`;
-      
-      // Company Info Header
+      const billNoText = `${String(billNumber).padStart(4, '0')}`;
+    
+      // ✅ Company Info Header
       doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
       doc.setTextColor(0, 102, 153);
-      
       doc.text("Sameer Enterprises", 105, 10, { align: "center" });
-      
+    
       doc.setFont("helvetica", "normal");
       doc.setFontSize(11);
       doc.setTextColor(60);
-      
       doc.text("Opp HP Pump & HDFC Bank, LBS Road, Vikhroli (W), Mumbai - 79", 105, 16, { align: "center" });
       doc.text("Mail: salarindiacorp@gmail.com", 105, 21, { align: "center" });
       doc.text("Phone: 7045692083", 105, 26, { align: "center" });
-
     
-      // Header
+      // ✅ Header
       doc.setFont("helvetica", "bold");
       doc.setFontSize(22);
       doc.setTextColor(40, 40, 140);
       doc.text("Proforma Invoice", 105, 38, { align: "center" });
     
-      // Metadata (Date, Time, Info)
+      // ✅ Metadata (Bill No, Date, Time, Info)
       doc.setFontSize(12);
       doc.setTextColor(0);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Bill No: ${billNoText}`, 15, 33);
       doc.text(`Date: ${new Date().toLocaleDateString('en-GB')}`, 150, 33);
       doc.text(`Time: ${formattedTime}`, 150, 38);
       doc.text(`Customer Info:`, 15, 45);
       doc.setFont("helvetica", "normal");
       doc.text(`${party}`, 48, 45);
     
-      // Table Header
+      // ✅ Table Header
       let y = 50;
       doc.setFillColor(230, 230, 250);
       doc.rect(10, y, 180, 10, 'F');
-    
       doc.setFontSize(12);
       doc.setTextColor(0);
       doc.setFont("helvetica", "bold");
@@ -535,53 +575,46 @@
       doc.text("Rate", 135, y + 7);
       doc.text("Total", 170, y + 7);
     
-      // Table Body
+      // ✅ Table Body
       y += 16;
       const rowHeight = 10;
-    
       doc.setFont("helvetica", "normal");
-      
+    
       history.forEach((item, index) => {
-        // Draw alternating row background
         if (index % 2 === 1) {
           doc.setFillColor(245, 245, 245);
           doc.rect(10, y - 6, 180, rowHeight, 'F');
         }
-      
-        // Draw text content
         doc.setTextColor(0);
         doc.text(String(item.name), 15, y);
         doc.text(String(item.displayQuantity + " " + item.unit), 100, y);
         doc.text(String(item.newpricePerUnit), 135, y);
         doc.text(String(item.finalAmount), 170, y);
-      
         y += rowHeight;
       });
-
-      y -= rowHeight/2;
-      // Total Section
+    
+      y -= rowHeight / 2;
+    
+      // ✅ Total Section
       doc.setDrawColor(150, 150, 150);
       doc.line(10, y, 190, y);
-    
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
       doc.setTextColor(0);
       doc.text("Total", 135, y + 8);
       doc.text(`${total}`, 170, y + 8);
     
-      // Footer
+      // ✅ Footer with Payment Info + QR
       y += 20;
       doc.setFontSize(11);
       doc.setTextColor(80);
-      
     
-    const formattedInfo = paymentInfo.replace(/, /g, "\n");
-
-    if (paymentInfo.includes("sflenterprises1@oksbi")) {
+      const formattedInfo = paymentInfo.replace(/, /g, "\n");
+    
+      if (paymentInfo.includes("sflenterprises1@oksbi")) {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(12);
-        doc.text(formattedInfo.split("\n"), 135, y); 
-        // Generate QR code for SFL UPI
+        doc.text(formattedInfo.split("\n"), 135, y);
         const qr = new QRious({
           value: `upi://pay?pa=sflenterprises1@oksbi&pn=SFL%20Enterprises&am=${total}&cu=INR`,
           size: 80,
@@ -589,12 +622,10 @@
         const qrDataURL = qr.toDataURL();
         y += 8;
         doc.addImage(qrDataURL, "PNG", 150, y, 30, 30);
-    
-    } else if (paymentInfo.includes("Sameer Enterprises")) {
+      } else if (paymentInfo.includes("Sameer Enterprises")) {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(12);
-        doc.text(formattedInfo.split("\n"), 135, y); 
-        // Generate QR code for HDFC UPI
+        doc.text(formattedInfo.split("\n"), 135, y);
         const qr = new QRious({
           value: `upi://pay?pa=salarindiacorp@okhdfcbank&pn=Latif%20Chaudhary&am=${total}&cu=INR`,
           size: 80,
@@ -602,47 +633,47 @@
         const qrDataURL = qr.toDataURL();
         y += 24;
         doc.addImage(qrDataURL, "PNG", 150, y, 30, 30);
-    
-    } else {
-        //Print formatted payment info as text only
+      } else {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(12);
-        doc.text(formattedInfo.split("\n"), 135, y); 
-    }
-      // Save PDF
-      doc.save("Bill.pdf");
-      
-      {
-      const party = document.getElementById("partyInfo").value.trim();
+        doc.text(formattedInfo.split("\n"), 135, y);
+      }
+    
+      // ✅ Save PDF with Bill Number
+      doc.save(`${billNoText}.pdf`);
+
+    
+      // ✅ Save bill to localStorage
       if (!party && history.length === 0) {
         alert("Cannot save empty bill!");
         return;
       }
     
       const billData = {
-        id: Date.now(), // unique ID
+        id: Date.now(),
+        billNumber: billNumber,
         party: party,
         items: history,
         total: total
       };
     
       let savedBills = JSON.parse(localStorage.getItem("savedBills")) || [];
-      savedBills.unshift(billData); // 👈 latest bill at top
-      
-      // ✅ Keep only last 100 bills
+      savedBills.unshift(billData);
+    
       if (savedBills.length > 100) {
         savedBills = savedBills.slice(0, 100);
       }
     
       try {
-          localStorage.setItem("savedBills", JSON.stringify(savedBills));
-        } catch (e) {
-          alert("Storage is full! Please delete some old bills.");
-        }
-      renderSavedBills();
+        localStorage.setItem("savedBills", JSON.stringify(savedBills));
+      } catch (e) {
+        alert("Storage is full! Please delete some old bills.");
       }
-
+    
+      // ✅ Refresh saved bills list immediately
+      renderSavedBills();
     }
+
     
     function renderSavedBills() {
       const billList = document.getElementById("billList");
@@ -660,14 +691,15 @@
     
         // Bill name
         const billText = document.createElement("span");
+    
         // Format date and time from bill.id (timestamp)
         const billDate = new Date(bill.id);
         const dateStr = billDate.toLocaleDateString("en-GB"); // dd/mm/yyyy
         const timeStr = billDate.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-        
-        billText.textContent = `${dateStr} ${timeStr} - ${bill.party || "Unnamed"} - ₹${bill.total.toFixed(2)}`;
-
-        // billText.textContent = `${bill.id} - ${bill.party || "Unnamed"} - ₹${bill.total.toFixed(2)}`;
+    
+        // 👇 Add bill number here (permanent)
+        billText.textContent = `${String(bill.billNumber).padStart(4, '0')}_${dateStr}_${timeStr}_${bill.party || "Unnamed"}_${bill.total.toFixed(2)}`;
+            
         billText.style.cursor = "pointer";
         billText.addEventListener("click", () => {
           loadBill(bill.id);
@@ -694,6 +726,7 @@
         billList.appendChild(li);
       });
     }
+
     
     function loadBill(billId) {
       let savedBills = JSON.parse(localStorage.getItem("savedBills")) || [];
@@ -798,7 +831,10 @@
     // 👇 Restore saved bills on page load
     window.addEventListener("DOMContentLoaded", () => {
       renderSavedBills();
+      generateBillNumber(); // 👈 auto-generate new bill on load
     });
+
   </script>
 </body>
 </html>
+
