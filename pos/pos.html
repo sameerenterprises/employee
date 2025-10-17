@@ -64,7 +64,7 @@
     <h1>Proforma Invoice</h1>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
       <h3 id="billNumberDisplay" style="margin: 0;">Bill Number: </h3>
-      <button onclick="startNewBill()" style="padding: 5px 10px; cursor: pointer;">🆕 New Bill</button>
+      <!--<button onclick="startNewBill()" style="padding: 5px 10px; cursor: pointer;">🆕 New Bill</button>-->
     </div>
 
     
@@ -253,6 +253,12 @@
       billNumber = newBillNumber;
       document.getElementById("billNumberDisplay").textContent = `Bill Number: ${String(billNumber).padStart(4, '0')}`;
     }
+    
+    function showNextBillNumber() {
+      const lastBillNumber = parseInt(localStorage.getItem("lastBillNumber") || "0", 10);
+      document.getElementById("billNumberDisplay").textContent = `Bill Number: ${String(lastBillNumber + 1).padStart(4, '0')}`;
+    }
+
 
 
     function addProduct() {
@@ -398,24 +404,26 @@
       renderTable();
     }
     
-    function startNewBill() {
-      // Clear current bill data
-      history = [];
-      total = 0;
+    // function startNewBill() {
+    //   // Clear current bill data
+    //   history = [];
+    //   total = 0;
     
-      // Clear input fields
-      document.getElementById("productInput").value = "";
-      document.getElementById("partyInfo").value = "";
-      document.getElementById("paymentInfo").selectedIndex = 0;
+    //   // Clear input fields
+    //   document.getElementById("productInput").value = "";
+    //   document.getElementById("partyInfo").value = "";
+    //   document.getElementById("paymentInfo").selectedIndex = 0;
     
-      // Clear the output table
-      document.getElementById("output").innerHTML = "";
+    //   // Clear the output table
+    //   document.getElementById("output").innerHTML = "";
+      
+    //   showNextBillNumber();
     
-      // Optionally scroll to top
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    //   // Optionally scroll to top
+    //   window.scrollTo({ top: 0, behavior: "smooth" });
     
-      alert("New bill started!");
-    }
+    //   alert("New bill started!");
+    // }
     
 
     function renderTable() {
@@ -672,6 +680,7 @@
     
       // ✅ Refresh saved bills list immediately
       renderSavedBills();
+      showNextBillNumber();
     }
 
     
@@ -831,7 +840,7 @@
     // 👇 Restore saved bills on page load
     window.addEventListener("DOMContentLoaded", () => {
       renderSavedBills();
-      generateBillNumber(); // 👈 auto-generate new bill on load
+        showNextBillNumber();
     });
 
   </script>
