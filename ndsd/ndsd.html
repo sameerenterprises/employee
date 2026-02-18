@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NDSD Dealer Code Search</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f6f9;
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .container {
+        background: white;
+        width: 100%;
+        max-width: 500px;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        outline: none;
+    }
+
+    input:focus {
+        border-color: #4CAF50;
+    }
+
+    .suggestions {
+        margin-top: 10px;
+        max-height: 250px;
+        overflow-y: auto;
+        border-radius: 6px;
+    }
+
+    .item {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+    }
+
+    .item:hover {
+        background: #f1f1f1;
+    }
+
+    .result {
+        margin-top: 20px;
+        text-align: center;
+        font-size: 18px;
+    }
+
+    .code-box {
+        background: #f8f8f8;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 6px;
+        font-weight: bold;
+        font-size: 20px;
+    }
+
+    button {
+        margin-top: 10px;
+        padding: 8px 15px;
+        border: none;
+        background: #4CAF50;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #45a049;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Search NDSD Code</h2>
+    <input type="text" id="search" placeholder="Type Dealer Name...">
+    <div class="suggestions" id="suggestions"></div>
+
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+
+const dealers = [
+{code:"NDSD-00008217", name:"MAHARASHTRA TRADERS (BANDRA)"},
+{code:"NDSD-00008221", name:"M.H. POP WARK"},
+{code:"NDSD-00008462", name:"RAHY ARTS"},
+{code:"NDSD-000946", name:"Hindustan Trading Co. ( Kurla)"},
+{code:"NDSD-000985", name:"SAI PLASTER"},
+{code:"NDSD-000991", name:"Popular Enterprises"},
+{code:"NDSD-000992", name:"Azad Plaster ( Thane)"},
+{code:"NDSD-000993", name:"Unique Enterprises"},
+{code:"NDSD-000997", name:"I M Enterprises"},
+{code:"NDSD-001007", name:"Regal plaster"},
+{code:"NDSD-001008", name:"Perfect plaster"},
+{code:"NDSD-001014", name:"S. K. plaster"},
+{code:"NDSD-001038", name:"Ashraf plaster"},
+{code:"NDSD-001039", name:"Excellent plaster"},
+{code:"NDSD-001040", name:"Yasmin plaster"},
+{code:"NDSD-001041", name:"K G N plaster"},
+{code:"NDSD-001052", name:"Rajshree enterprises"},
+{code:"NDSD-001925", name:"N K Decorators"},
+{code:"NDSD-001926", name:"suraj enterprises"},
+{code:"NDSD-001936", name:"Chaudhary Plaster"},
+{code:"NDSD-002230", name:"Azhari Plaster of Paris"},
+{code:"NDSD-002453", name:"J K enterprises"},
+{code:"NDSD-002454", name:"K.G.N ENTERPRISES"},
+{code:"NDSD-002465", name:"A.K plaster"},
+{code:"NDSD-002502", name:"Rizwan plaster"},
+{code:"NDSD-002504", name:"A H PLASTER OF PARIS"},
+{code:"NDSD-002506", name:"KRISHNA PLASTER"},
+{code:"NDSD-002541", name:"Majisa plaster"},
+{code:"NDSD-002547", name:"Saroj Plaster"},
+{code:"NDSD-002548", name:"AARIDHA PLASTER"},
+{code:"NDSD-002555", name:"KGN Gypsum Plaster -Bhandup"},
+{code:"NDSD-008059", name:"AFZAL POP SHOP"}
+];
+
+const searchInput = document.getElementById("search");
+const suggestions = document.getElementById("suggestions");
+const result = document.getElementById("result");
+
+searchInput.addEventListener("input", function() {
+    const value = this.value.toLowerCase();
+    suggestions.innerHTML = "";
+    result.innerHTML = "";
+
+    if(value === "") return;
+
+    const filtered = dealers.filter(d =>
+        d.name.toLowerCase().includes(value)
+    );
+
+    filtered.forEach(d => {
+        const div = document.createElement("div");
+        div.classList.add("item");
+        div.textContent = d.name;
+        div.onclick = () => showCode(d);
+        suggestions.appendChild(div);
+    });
+});
+
+function showCode(dealer) {
+    suggestions.innerHTML = "";
+    result.innerHTML = `
+        <div>Dealer Name:</div>
+        <div><strong>${dealer.name}</strong></div>
+        <div class="code-box">${dealer.code}</div>
+        <button onclick="copyCode('${dealer.code}')">Copy Code</button>
+    `;
+}
+
+function copyCode(code) {
+    navigator.clipboard.writeText(code);
+    alert("Copied: " + code);
+}
+
+</script>
+
+</body>
+</html>
