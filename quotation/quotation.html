@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sameer Enterprises Quotation</title>
 
 <style>
@@ -10,7 +11,7 @@
 }
 
 body {
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   background: #f4f4f4;
   padding: 10px;
   margin: 0;
@@ -22,6 +23,7 @@ body {
   border-radius: 8px;
   max-width: 1000px;
   margin: auto;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 h1 {
@@ -31,141 +33,188 @@ h1 {
   margin-bottom: 10px;
 }
 
+/* GST Switch Styling */
+.switch-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  background: #e9eef5;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px; width: 16px;
+  left: 4px; bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #003366;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
 #inputBox {
   width: 100%;
   padding: 12px;
   font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
-/* TABLE WRAPPER FOR MOBILE SCROLL */
 .table-wrapper {
   width: 100%;
   overflow-x: auto;
-  margin-top: 10px;
+  margin-top: 15px;
 }
 
-/* TABLE */
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 600px; /* allows scroll instead of squishing */
+  min-width: 500px; 
 }
 
 th, td {
   border: 1px solid #ccc;
-  padding: 8px;
-  text-align: center;
+  padding: 10px;
+  text-align: left;
   font-size: 14px;
 }
 
 th {
   background: #e9eef5;
-  position: sticky;
-  top: 0;
+  white-space: nowrap;
 }
 
-button {
-  padding: 12px 16px;
-  margin-top: 10px;
+/* Toggle visibility class */
+.gst-col {
+  display: table-cell;
+}
+
+.no-gst .gst-col {
+  display: none;
+}
+
+.btn-generate {
+  background: #003366;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  padding: 15px;
+  margin-top: 15px;
   cursor: pointer;
   font-size: 16px;
   width: 100%;
 }
 
-/* Suggestions dropdown */
-#suggestions {
-  position: relative;
+.btn-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
 }
 
 #suggestionList {
   list-style: none;
-  margin: 0;
-  padding: 0;
+  margin: 0; padding: 0;
   background: white;
   border: 1px solid #ccc;
   max-height: 200px;
   overflow-y: auto;
   position: absolute;
-  width: 100%;
+  width: calc(100% - 30px);
   z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 #suggestionList li {
-  padding: 10px;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
   cursor: pointer;
 }
 
-#suggestionList li:hover {
-  background: #f0f0f0;
-}
-
-/* 📱 MOBILE OPTIMIZATION */
+/* MOBILE OPTIMIZATION */
 @media (max-width: 600px) {
-
-  .container {
-    padding: 10px;
-  }
-
-  h1 {
-    font-size: 18px;
-  }
-
-  #inputBox {
-    font-size: 14px;
-    padding: 10px;
-  }
-
-  th, td {
-    font-size: 12px;
-    padding: 6px;
-  }
-
-  button {
-    font-size: 14px;
-    padding: 10px;
-  }
+  body { padding: 5px; }
+  .container { padding: 10px; }
+  h1 { font-size: 18px; }
+  th, td { padding: 8px 5px; font-size: 13px; }
 }
 </style>
 
 </head>
-
 <body>
 
 <div class="container">
+  <h1>Quotation Builder</h1>
 
-<h1>Quotation Builder</h1>
+  <div class="switch-container">
+    <span>GST Mode</span>
+    <label class="switch">
+      <input type="checkbox" id="gstToggle" checked onchange="toggleGSTView()">
+      <span class="slider"></span>
+    </label>
+  </div>
 
-<div id="suggestions">
-<input id="inputBox" placeholder="Enter product key and rate (example: bo 65)" autofocus>
-<ul id="suggestionList"></ul>
-</div>
+  <div id="suggestions" style="position: relative;">
+    <input id="inputBox" type="text" placeholder="Product key + rate (e.g., b 350)" autofocus>
+    <ul id="suggestionList"></ul>
+  </div>
 
-<div class="table-wrapper">
-<table>
-<thead>
-<tr>
-<th>Particulars</th>
-<th>Unit Price</th>
-<th>Unit</th>
-<th>GST %</th>
-<th>Price Incl GST</th>
-<th>Remove</th>
-</tr>
-</thead>
+  <div class="table-wrapper">
+    <table id="quoteTable">
+      <thead>
+        <tr>
+          <th>Particulars</th>
+          <th>Unit Price</th>
+          <th>Unit</th>
+          <th class="gst-col">GST %</th>
+          <th class="gst-col">Total (Incl GST)</th>
+          <th style="width: 50px;"></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
 
-<tbody id="tableBody"></tbody>
-</table>
-</div>
-
-<button onclick="generatePDF()">Generate PDF</button>
-
+  <button class="btn-generate" onclick="generatePDF()">Generate PDF</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
-
-// ✅ PRODUCT DICTIONARY (you can paste your full one)
     const products = {
       "b": ["Gypblock Board 6'x4'x12.5mm", "nos", 330, 18, 0],
       "gb": ["Gyproc Board 6'x4'x12.5mm", "nos", 430, 18, 0],
@@ -293,76 +342,69 @@ button {
       "roff": ["Round Off", "", 0, 0, 0],
     };
 
-
 const inputBox = document.getElementById("inputBox");
 const suggestionList = document.getElementById("suggestionList");
+const gstToggle = document.getElementById("gstToggle");
+const quoteTable = document.getElementById("quoteTable");
 
-// ENTER → add product
+function toggleGSTView() {
+  if (gstToggle.checked) {
+    quoteTable.classList.remove("no-gst");
+  } else {
+    quoteTable.classList.add("no-gst");
+  }
+}
+
 inputBox.addEventListener("keydown", e => {
   if (e.key === "Enter") addProduct();
 });
 
-// Suggestions
 inputBox.addEventListener("input", () => {
   const query = inputBox.value.trim().toLowerCase();
   suggestionList.innerHTML = "";
-
   if (!query) return;
 
   const matches = Object.entries(products)
-    .filter(([code, [name]]) =>
-      code.includes(query) || name.toLowerCase().includes(query)
-    )
-    .slice(0, 10);
+    .filter(([code, [name]]) => code.includes(query) || name.toLowerCase().includes(query))
+    .slice(0, 8);
 
   matches.forEach(([code, [name, unit, price]]) => {
     const li = document.createElement("li");
-    li.textContent = `${code} — ${name} (₹${price})`;
-
+    li.textContent = `${code.toLowerCase()} — ${name} (₹${price})`;
     li.onclick = () => {
       inputBox.value = code + " ";
       suggestionList.innerHTML = "";
       inputBox.focus();
     };
-
     suggestionList.appendChild(li);
   });
 });
 
-// Hide suggestions when clicking outside
-document.addEventListener("click", e => {
-  if (!document.getElementById("suggestions").contains(e.target)) {
-    suggestionList.innerHTML = "";
-  }
-});
-
 function addProduct() {
-
   const input = inputBox.value.trim();
   if (!input) return;
 
   const [code, rateStr] = input.split(" ");
+  const productKey = code.toLowerCase();
 
-  if (!products[code]) {
+  if (!products[productKey]) {
     alert("Invalid product key");
     return;
   }
 
-  const [name, unit, defaultRate, gst] = products[code];
+  const [name, unit, defaultRate, gst] = products[productKey];
   const rate = parseFloat(rateStr) || defaultRate;
   const priceGST = rate + (rate * gst / 100);
 
   const row = document.createElement("tr");
-
   row.innerHTML = `
     <td>${name}</td>
     <td>${rate.toFixed(2)}</td>
     <td>${unit}</td>
-    <td>${gst}%</td>
-    <td>${priceGST.toFixed(2)}</td>
-    <td><button onclick="this.closest('tr').remove()">❌</button></td>
+    <td class="gst-col">${gst}%</td>
+    <td class="gst-col">${priceGST.toFixed(2)}</td>
+    <td><button class="btn-remove" onclick="this.closest('tr').remove()">❌</button></td>
   `;
-
   document.getElementById("tableBody").appendChild(row);
 
   inputBox.value = "";
@@ -371,9 +413,9 @@ function addProduct() {
 }
 
 async function generatePDF() {
-
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  const isGstMode = gstToggle.checked;
 
   // Header
   doc.setFontSize(20);
@@ -384,26 +426,36 @@ async function generatePDF() {
   doc.setTextColor(0);
   doc.text("Quotation", 105, 25, { align: "center" });
 
-  doc.setFontSize(10);
+  doc.setFontSize(12);
   doc.text(`Date: ${new Date().toLocaleDateString("en-GB")}`, 15, 30);
 
   let y = 40;
 
-  // Table header
+  // Header Background
   doc.setFillColor(230, 230, 250);
   doc.rect(10, y - 6, 190, 8, "F");
 
+  // Dynamic PDF Columns
   doc.text("Particulars", 12, y);
-  doc.text("Unit Price", 90, y);
-  doc.text("Unit", 125, y);
-  doc.text("GST", 150, y);
-  doc.text("Incl GST", 170, y);
+  if (isGstMode){
+    doc.text("Price", 100, y);
+    doc.text("Unit", 135, y);
+  } else {
+    doc.text("Price", 115, y);
+    doc.text("Unit", 155, y);
+  }
+  
+  if (isGstMode) {
+    doc.text("GST", 155, y);
+    doc.text("Incl. GST", 175, y);
+  }
 
   y += 8;
 
-  // Table body
+  // Rows
   document.querySelectorAll("#tableBody tr").forEach((row, i) => {
-
+    if (y > 280) { doc.addPage(); y = 20; }
+    
     if (i % 2 === 1) {
       doc.setFillColor(245, 245, 245);
       doc.rect(10, y - 6, 190, 8, "F");
@@ -411,18 +463,24 @@ async function generatePDF() {
 
     const cells = row.children;
 
-    doc.text(cells[0].textContent, 12, y);
-    doc.text(cells[1].textContent, 90, y);
-    doc.text(cells[2].textContent, 125, y);
-    doc.text(cells[3].textContent, 150, y);
-    doc.text(cells[4].textContent, 170, y);
+    
+    if (isGstMode) {
+      doc.text(cells[0].textContent, 12, y);
+      doc.text(cells[1].textContent, 100, y);
+      doc.text(cells[2].textContent, 135, y);
+      doc.text(cells[3].textContent, 155, y);
+      doc.text(cells[4].textContent, 175, y);
+    } else {
+      doc.text(cells[0].textContent, 12, y);
+      doc.text(cells[1].textContent, 115, y);
+      doc.text(cells[2].textContent, 155, y);
+    }
 
     y += 8;
   });
 
-  doc.save("quotation.pdf");
+  doc.save(`Quotation_${isGstMode ? 'GST' : 'Regular'}.pdf`);
 }
-
 </script>
 
 </body>
