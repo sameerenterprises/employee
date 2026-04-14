@@ -159,6 +159,41 @@ th { background: #e9eef5; }
   border: none;
   cursor: pointer;
 }
+.input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Mobile layout */
+.input-row {
+  display: flex;
+  gap: 10px;
+}
+
+#rateInput {
+  flex: 1;
+}
+
+.input-row button {
+  flex: 1;
+}
+
+/* Desktop layout */
+@media (min-width: 768px) {
+  .input-container {
+    flex-direction: row;
+  }
+
+  #productInput {
+    flex: 2;
+  }
+
+  .input-row {
+    flex: 1;
+  }
+}
+
 </style>
 </head>
 
@@ -203,6 +238,12 @@ th { background: #e9eef5; }
 
 <button class="btn-generate" onclick="generatePDF()">Generate PDF</button>
 </div>
+
+</div>
+
+<!-- ✅ ADD HERE -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
 <script>
     const products = {
@@ -253,8 +294,8 @@ th { background: #e9eef5; }
 
   "Gypsum Plaster": ["bg", 200, 5],
   "Gyproc Easi Fill 90": ["bg", 550, 18],
-  "Gyproc Xpert Plaster 25KG": ["bg", 300, 5],
-  "Gyproc Xpert Plaster 20KG": ["bg", 240, 5],
+  "Xpert Gypsum Plaster 25KG": ["bg", 300, 5],
+  "Xpert Gypsum Plaster 20KG": ["bg", 240, 5],
   "Gyproc Elite 100 - 25kg": ["bg", 340, 5],
   "Gyproc Elite MR - 25kg": ["bg", 380, 5],
   "Readymix 10kg": ["bkt", 250, 18],
@@ -380,9 +421,186 @@ rateInput.addEventListener("keydown", e => {
   if (e.key === "Enter") addProduct();
 });
 
-/* PDF (unchanged simple version) */
-function generatePDF() {
-  alert("PDF generation kept same as your original code");
+async function generatePDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const isGstMode = gstToggle.checked;
+
+let y = 15;
+
+// ===== HEADER LEFT (LOGO BOX SIMULATION) =====
+doc.setFillColor(110, 40, 180); // purple
+doc.rect(10, 10, 80, 25, "F");
+
+doc.setTextColor(255);
+doc.setFontSize(12);
+doc.setFont(undefined, "bold");
+doc.text("Sameer Enterprises", 15, 22);
+
+doc.setFontSize(8);
+doc.setFont(undefined, "normal");
+doc.text("STS Trust Safety & Dignity", 15, 27);
+
+// ===== HEADER RIGHT (FIXED RIGHT ALIGN) =====
+const rightX = 200;
+
+doc.setTextColor(255, 0, 0);
+doc.setFontSize(18);
+doc.setFont(undefined, "bold");
+doc.text("SAMEER ENTERPRISES", rightX, 15, { align: "right" });
+
+doc.setTextColor(0);
+doc.setFontSize(9);
+doc.setFont(undefined, "normal");
+
+doc.text("Opp. H. P. Pump & HDFC Bank,", rightX, 22, { align: "right" });
+doc.text("Vikhroli (W), Mumbai - 79", rightX, 27, { align: "right" });
+doc.text("Phone: 9930306247", rightX, 32, { align: "right" });
+doc.text("Email: salarindiacorp@gmail.com", rightX, 37, { align: "right" });
+
+y = 45;
+
+// ===== TO + DATE ROW =====
+doc.rect(10, y, 130, 10);
+doc.text("To: ", 12, y + 6);
+
+doc.rect(140, y, 60, 10);
+
+// DATE label (left)
+doc.text("DATE:", 142, y + 6);
+
+// DATE value (centered inside box)
+doc.text(
+  new Date().toLocaleDateString("en-GB"),
+  170,
+  y + 6,
+  { align: "center" }
+);
+
+y += 12;
+
+// ===== SUBJECT (CENTERED PROPERLY) =====
+doc.rect(10, y, 190, 8);
+
+doc.setFont(undefined, "bold");
+doc.text(
+  "SUB : QUOTATION FOR YOUR REQUIREMENT",
+  105,
+  y + 5,
+  { align: "center" }
+);
+
+  y += 10;
+
+//   // Header Background
+//   doc.setFillColor(230, 230, 250);
+//   doc.rect(10, y - 6, 190, 8, "F");
+
+//   // Dynamic PDF Columns
+//   doc.text("Particulars", 12, y);
+//   if (isGstMode){
+//     doc.text("Price", 100, y);
+//     doc.text("Unit", 135, y);
+//   } else {
+//     doc.text("Price", 115, y);
+//     doc.text("Unit", 155, y);
+//   }
+  
+//   if (isGstMode) {
+//     doc.text("GST", 155, y);
+//     doc.text("Incl. GST", 175, y);
+//   }
+
+//   y += 8;
+
+// ===== TABLE USING AUTOTABLE =====
+
+// Columns
+let columns;
+let rows = [];
+
+if (isGstMode) {
+  columns = ["Particulars", "Price", "Unit", "GST", "Incl. GST"];
+} else {
+  columns = ["Particulars", "Price", "Unit"];
+}
+
+// Fetch data from HTML table
+document.querySelectorAll("#tableBody tr").forEach(row => {
+  let rowData = [];
+  row.querySelectorAll("td").forEach(td => {
+    rowData.push(td.textContent.trim());
+  });
+  rows.push(rowData);
+});
+
+// Draw table
+doc.autoTable({
+  startY: y,
+  head: [columns],
+  body: rows,
+
+  theme: "grid", // ✅ adds vertical + horizontal lines
+
+  styles: {
+    fontSize: 10,
+    cellPadding: 3,
+    valign: "middle",
+  },
+
+  headStyles: {
+    fillColor: [110, 40, 180],
+    textColor: 255,
+    fontStyle: "bold",
+    halign: "center"
+  },
+
+  columnStyles: isGstMode
+    ? {
+        0: { cellWidth: 70 },
+        1: { halign: "center" },
+        2: { halign: "center" },
+        3: { halign: "center" },
+        4: { halign: "center" },
+      }
+    : {
+        0: { cellWidth: 100 },
+        1: { halign: "center" },
+        2: { halign: "center" },
+      },
+
+  alternateRowStyles: {
+    fillColor: [245, 245, 245]
+  }
+});
+
+//   Rows
+//   document.querySelectorAll("#tableBody tr").forEach((row, i) => {
+//     if (y > 280) { doc.addPage(); y = 20; }
+    
+//     if (i % 2 === 1) {
+//       doc.setFillColor(245, 245, 245);
+//       doc.rect(10, y - 6, 190, 8, "F");
+//     }
+
+    // const cells = row.children;
+
+    
+//     // if (isGstMode) {
+//     //   doc.text(cells[0].textContent, 12, y);
+//     //   doc.text(cells[1].textContent, 100, y);
+//     //   doc.text(cells[2].textContent, 135, y);
+//     //   doc.text(cells[3].textContent, 155, y);
+//     //   doc.text(cells[4].textContent, 175, y);
+//     // } else {
+//     //   doc.text(cells[0].textContent, 12, y);
+//     //   doc.text(cells[1].textContent, 115, y);
+//     //   doc.text(cells[2].textContent, 155, y);
+//     // }
+
+    y += 8;
+
+  doc.save(`Quotation_${isGstMode ? 'GST' : 'Regular'}.pdf`);
 }
 </script>
 
