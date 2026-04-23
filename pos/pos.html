@@ -209,9 +209,9 @@
       "wal": ["Wall Angle 3000x24mm", "nos", 80, 18, 60],
       "mwal": ["Maxtra Wall Angle", "nos", 100, 18, 0],
     
-      "td300": ["Trap Door 300x300", "nos", 1650, 18, 1250],
-      "td450": ["Trap Door 450x450", "nos", 2000, 18, 1500],
-      "td600": ["Trap Door 600x600", "nos", 2200, 18, 1700],
+      "td300": ["Trap Door 300x300", "nos", 1650, 18, 1059.32],
+      "td450": ["Trap Door 450x450", "nos", 2000, 18, 1271.19],
+      "td600": ["Trap Door 600x600", "nos", 2200, 18, 1440.68],
     
       "gw12": ["Glasswool 12x50", "nos", 3200, 18, 0],
       "gw16": ["Glasswool 16x50", "nos", 3400, 18, 0],
@@ -283,8 +283,19 @@
 
       const [productCode, quantityStr, amountStr] = input.split("*");
       const quantity = quantityStr ? parseFloat(parseFloat(quantityStr).toFixed(2)) : 1;
-      const amount = amountStr ? parseFloat(parseFloat(amountStr).toFixed(2)) : 0;
-
+        let amount = 0;
+        let isInclusiveGST = false;
+        
+        if (amountStr) {
+          if (amountStr.toLowerCase().endsWith("i")) {
+            isInclusiveGST = true;
+            amount = parseFloat(amountStr.slice(0, -1)); // remove 'i'
+          } else {
+            amount = parseFloat(amountStr);
+          }
+        
+          amount = parseFloat(amount.toFixed(2));
+        }
       const productDetails = products[productCode] || customProducts[productCode];
 
       if (!productDetails) {
@@ -300,7 +311,18 @@
       }
 
       const productName = productDetails[0];
-      const pricePerUnit = amount === 0 ? productDetails[2] : amount;
+        let pricePerUnit;
+        
+        if (amount === 0) {
+          pricePerUnit = productDetails[2];
+        } else {
+          if (isInclusiveGST) {
+            const gst = productDetails[3];
+            pricePerUnit = parseFloat((amount / (1 + gst / 100)).toFixed(2));
+          } else {
+            pricePerUnit = amount;
+          }
+        }
       const unit = productDetails[1];
       const costPrice = productDetails[4];
       const gstPercentage = productDetails[3];
@@ -318,10 +340,10 @@
       let marginDisplay = "";
       
       if (costPrice > 0) {
-        const sellingPrice = amount === 0 ? productDetails[2] : amount;
+        const sellingPrice = amount === 0 ? productDetails[2] : pricePerUnit;
         const costWithGST = costPrice + (costPrice * gstPercentage / 100);
-        margin = parseFloat(((sellingPrice - costWithGST) * quantity).toFixed(2));
-        marginPercentage = parseFloat(((sellingPrice - costWithGST) / costWithGST * 100).toFixed(2));
+        margin = parseFloat(((sellingPrice - costPrice) * quantity).toFixed(2));
+        marginPercentage = parseFloat(((sellingPrice - costPrice) / costPrice * 100).toFixed(2));
         marginDisplay = `₹${margin} (${marginPercentage}%)`;
       }
       
@@ -848,4 +870,3 @@
   </script>
 </body>
 </html>
-
