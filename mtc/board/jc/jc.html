@@ -1,194 +1,463 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Material Test Certificate PDF Generator</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.21/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background-color: white;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            text-align: center;
-        }
-        label {
-            display: block;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        textarea, input[type="text"], input[type="date"], input[type="datetime-local"] {
-            padding: 10px;
-            margin-top: 5px;
-            width: 100%;
-            box-sizing: border-box;
-            height: 40px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            margin-top: 20px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MTC PDF Generator</title>
+
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+
+    *{
+      box-sizing:border-box;
+      font-family:Arial, sans-serif;
+    }
+
+    body{
+      background:#f3f4f6;
+      padding:20px;
+    }
+
+    .container{
+      max-width:750px;
+      margin:auto;
+      background:#fff;
+      padding:25px;
+      border-radius:10px;
+      box-shadow:0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2{
+      text-align:center;
+      margin-bottom:25px;
+    }
+
+    .form-group{
+      margin-bottom:15px;
+    }
+
+    label{
+      display:block;
+      margin-bottom:6px;
+      font-weight:bold;
+    }
+
+    input,
+    textarea{
+      width:100%;
+      padding:10px;
+      border:1px solid #ccc;
+      border-radius:6px;
+      font-size:15px;
+    }
+
+    textarea{
+      resize:vertical;
+      min-height:110px;
+    }
+
+    button{
+      width:100%;
+      padding:14px;
+      border:none;
+      background:#1d4ed8;
+      color:white;
+      font-size:16px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:bold;
+    }
+
+    button:hover{
+      background:#1e40af;
+    }
+
+  </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>Jointing Compound MTC</h1>
-        <form id="certificateForm">
-            <label for="batchNumber">Invoice Number:</label>
-            <input type="text" id="batchNumber" placeholder="91XXXXXXXXX" maxlength="10" required>
-            <button type="button" onclick="generateInvoiceNumber()">Auto-Generate</button><br><br>
 
-            <label for="manufactureDate">Invoice Date:</label>
-            <input type="date" id="manufactureDate" required><br><br>
+  <div class="container">
 
-            <label for="generatedate">MTC Generate Date:</label>
-            <input type="datetime-local" id="generatedate" required><br><br>
+    <h2>MTC PDF Generator</h2>
 
-            <label for="quantity">Quantity:</label>
-            <input type="text" id="quantity" placeholder="Enter quantity" required><br><br>
-
-            <label for="address">Address:</label>
-            <textarea id="address" required></textarea><br><br>
-
-            <button type="button" onclick="generatePDF()">Generate PDF</button>
-        </form>
+    <div class="form-group">
+      <label>MTC Generation Date & Time</label>
+      <input type="datetime-local" id="mtcDateTime">
     </div>
 
-    <script>
-        function generateInvoiceNumber() {
-            const randomNumber = Math.floor(Math.random() * 1000000000);
-            document.getElementById('batchNumber').value = "91" + randomNumber.toString().padStart(8, '0');
+    <div class="form-group">
+      <label>Invoice Date</label>
+      <input type="date" id="invoiceDate">
+    </div>
+
+    <div class="form-group">
+      <label>Invoice Number</label>
+      <input type="text" id="invoiceNumber" placeholder="Enter Invoice Number">
+    </div>
+
+    <div class="form-group">
+      <label>MTC Number</label>
+      <input type="text" id="mtcNumber" placeholder="Enter MTC Number">
+    </div>
+
+    <div class="form-group">
+      <label>Generated By</label>
+      <input type="text" id="generatedBy" placeholder="Enter Name">
+    </div>
+
+    <div class="form-group">
+      <label>Site Address</label>
+
+      <textarea id="siteAddress" placeholder="Enter Site Address"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Upload QR PNG</label>
+      <input type="file" id="qrImage" accept="image/png">
+    </div>
+
+    <button onclick="generatePDF()">
+      Generate PDF
+    </button>
+
+  </div>
+
+  <script>
+
+    async function fileToBase64(file){
+
+      return new Promise((resolve, reject)=>{
+
+        const reader = new FileReader();
+
+        reader.readAsDataURL(file);
+
+        reader.onload = ()=> resolve(reader.result);
+
+        reader.onerror = error => reject(error);
+
+      });
+
+    }
+
+    async function generatePDF(){
+
+      const { jsPDF } = window.jspdf;
+
+      const doc = new jsPDF({
+        orientation:"portrait",
+        unit:"mm",
+        format:"a4"
+      });
+
+      // ===== INPUTS =====
+
+      const mtcDateTime =
+        document.getElementById("mtcDateTime").value;
+
+      const invoiceDate =
+        document.getElementById("invoiceDate").value;
+
+      const invoiceNumber =
+        document.getElementById("invoiceNumber").value;
+
+      const mtcNumber =
+        document.getElementById("mtcNumber").value;
+
+      const generatedBy =
+        document.getElementById("generatedBy").value;
+
+      const siteAddress =
+        document.getElementById("siteAddress").value;
+
+      const qrFile =
+        document.getElementById("qrImage").files[0];
+
+      let qrBase64 = "";
+
+      if(qrFile){
+
+        qrBase64 = await fileToBase64(qrFile);
+
+      }
+
+      // ===== DATE FORMAT =====
+
+      const formattedDateTime =
+        new Date(mtcDateTime).toLocaleString("en-IN",{
+          day:"numeric",
+          month:"numeric",
+          year:"2-digit",
+          hour:"numeric",
+          minute:"2-digit",
+          hour12:true
+        });
+
+      const formattedInvoiceDate =
+        new Date(invoiceDate).toLocaleDateString("en-GB",{
+          day:"2-digit",
+          month:"short",
+          year:"numeric"
+        });
+
+      // ===== HEADER =====
+
+      function drawHeader(pageNo,totalPages){
+
+        // Date Time
+        doc.setFontSize(8);
+
+        doc.text(
+          formattedDateTime,
+          10,
+          10
+        );
+
+        // Title
+        doc.setFontSize(7);
+
+        doc.text(
+          "Manufacturing Test Certificate",
+          105,
+          10,
+          {align:"center"}
+        );
+
+        // SAINT GOBAIN TEXT
+        doc.setFontSize(18);
+
+        doc.setTextColor(0,102,204);
+
+        doc.setFont(undefined,"bold");
+
+        doc.text(
+          "SAINT-GOBAIN",
+          105,
+          32,
+          {align:"center"}
+        );
+
+        doc.setTextColor(0);
+
+        // Invoice Date
+        doc.setFontSize(10);
+
+        doc.setFont(undefined,"normal");
+
+        doc.text(
+          formattedInvoiceDate,
+          15,
+          48
+        );
+
+        // SRNO
+        doc.setFont(undefined,"bold");
+
+        doc.text(
+          `SRNO - ${mtcNumber}`,
+          165,
+          48
+        );
+
+        // Page Count
+        doc.setFont(undefined,"normal");
+
+        doc.text(
+          `Page - ${pageNo} out of ${totalPages}`,
+          170,
+          56
+        );
+
+        // Main Title
+        doc.setFontSize(14);
+
+        doc.setFont(undefined,"bold");
+
+        doc.text(
+          "MATERIAL TEST CERTIFICATE",
+          105,
+          64,
+          {align:"center"}
+        );
+
+        // Body
+        doc.setFontSize(9);
+
+        doc.setFont(undefined,"normal");
+
+        const bodyText =
+          `This is to certify that METAL as supplied to M/s. SAMEER ENTERPRISE PD against our invoice number : ${invoiceNumber} , dated : ${formattedInvoiceDate} are tested and confirm to the below specification under IS 513,IS 16162, IS 15961,BS EN 14195,AS 1397 .`;
+
+        const splitText =
+          doc.splitTextToSize(bodyText,170);
+
+        doc.text(splitText,15,76);
+
+        // Blue Box
+        doc.setDrawColor(102,178,255);
+
+        doc.rect(
+          10,
+          88,
+          190,
+          52
+        );
+
+      }
+
+      // ===== FOOTER =====
+
+      function drawFooter(){
+        y=145
+        // SITE ADDRESS
+        doc.setFontSize(10);
+
+        doc.setFont(undefined,"bold");
+
+        doc.text(
+          "SITE ADDRESS :",
+          20,
+          145
+        );
+
+        doc.setFont(undefined,"normal");
+
+        const addressLines =
+          doc.splitTextToSize(siteAddress,95);
+
+        doc.text(
+          addressLines,
+          20,
+          151
+        );
+
+        // QR TITLE
+        doc.setFontSize(7);
+
+        doc.setFont(undefined,"bold");
+
+        doc.text(
+          "Please scan QR to authenticate MTC",
+          148,
+          145
+        );
+
+        // QR IMAGE
+        if(qrBase64){
+
+          doc.addImage(
+            qrBase64,
+            "PNG",
+            154,
+            149,
+            34,
+            34
+          );
+
         }
 
-        function generateMTCNumber() {
-            const randomNumber = Math.floor(Math.random() * 1000000000);
-            return "MTC" + randomNumber.toString().padStart(9, '0');
-        }
+        // Notes
+        doc.setFontSize(8);
 
-        async function generatePDF() {
-            const { jsPDF } = window.jspdf;
+        doc.setFont(undefined,"normal");
 
-            const doc = new jsPDF({
-                orientation: 'portrait',
-                unit: 'mm',
-                format: 'a4'
-            });
+        doc.text(
+          "Note : This is Computer generated material test certificate and hence requires no signature.",
+          15,
+          190
+        );
 
-            let batchNumber = document.getElementById('batchNumber').value;
-            let manufactureDate = document.getElementById('manufactureDate').value;
-            let address = document.getElementById('address').value;
-            let mtcNumber = generateMTCNumber();
-            let generatedate = document.getElementById('generatedate').value;
-            let quantity = document.getElementById('quantity').value;
+        doc.text(
+          "Note : This is Just a Material Test Report for an individual product and cannot be produced as System Performance Test",
+          15,
+          195
+        );
 
-            if (!batchNumber || !manufactureDate || !address || !quantity) {
-                alert('Please enter all the details');
-                return;
-            }
+        doc.text(
+          "Report (for Fire/Acoustic).",
+          15,
+          199
+        );
 
-            const jcmtc = 'jcmtc.png'; // Replace with your Base64 image string or URL
-            doc.addImage(jcmtc, 'PNG', 0, 0, 210, 300); // Adjust position and size as needed
-            
-            const formattedDate = formatDate(manufactureDate);
-            const headerdate = formatDate2(generatedate);
-            const footerdate=formatDate3(generatedate);
+        // Generated By
+        doc.setFontSize(7);
 
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`${headerdate}`, 10, 10);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`${mtcNumber}`, 175, 38);
+        doc.text(
+          `- Generated by LOG9N on ${formattedDateTime} as requested by LATIF CHAUDHARY`,
+          25,
+          206
+        );
 
-            doc.setFontSize(9);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`${batchNumber}`, 176, 63);
-            doc.setFontSize(9);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`${formattedDate}`, 26, 68);
-            doc.setFontSize(6.4);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`${footerdate}`, 68, 179);
-            doc.setFontSize(9);
-            doc.text(`QTY - ${quantity} (BAG)`, 174, 80);
+        // Gyproc Text
+        doc.setFontSize(20);
 
-            // Format address with first line bold
-            const addressLines = address.split('\n');
-            const firstLine = addressLines[0];
-            const remainingLines = addressLines.slice(1);
+        doc.setTextColor(0,102,204);
 
-            // First line in bold
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            doc.text(firstLine, 14, 135);
+        doc.setFont(undefined,"bold");
 
-            // Remaining lines in normal font
-            doc.setFont('helvetica', 'normal');
-            remainingLines.forEach((line, index) => {
-                doc.text(line, 14, 135 + ((index + 1) * 6));
-            });
+        doc.text(
+          "gyproc",
+          105,
+          217,
+          {align:"center"}
+        );
 
-            // Generate QR Code
-            const qrCodeDataUrl = await generateQRCode(mtcNumber);
-            doc.addImage(qrCodeDataUrl, 'PNG', 150, 160, 40, 40); // Add QR Code to PDF
+        doc.setTextColor(0);
 
-            // Save the generated PDF
-            doc.save(`${batchNumber}.pdf`);
-        }
+        doc.setFontSize(6);
 
-        function generateQRCode(Number) {
-            return new Promise((resolve) => {
-                const link = `https://sameerenterprises.github.io/mtc/${Number}`;
-                const qrCodeCanvas = $('<canvas></canvas>')[0];
-                $(qrCodeCanvas).qrcode({
-                    width: 128,
-                    height: 128,
-                    text: link,
-                });
+        doc.text(
+          "SAINT-GOBAIN",
+          105,
+          221,
+          {align:"center"}
+        );
 
-                // Convert canvas to Data URL
-                const dataUrl = qrCodeCanvas.toDataURL('image/png');
-                resolve(dataUrl);
-            });
-        }
+        // Footer Company
+        doc.setFontSize(9);
 
-        function formatDate(inputDate) {
-            const date = new Date(inputDate);
-            const options = { day: '2-digit', month: 'short', year: '2-digit' };
-            return date.toLocaleDateString('en-GB', options)
-        }
+        doc.setFont(undefined,"bold");
 
-        function formatDate2(inputDate) {
-            const date = new Date(inputDate);
-            const options = {  month: '2-digit', day: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' };
-            return date.toLocaleString('en-US', options)
-        }
+        doc.text(
+          "Saint-Gobain India Private Limited – Gyproc Business",
+          10,
+          233
+        );
 
-        function formatDate3(inputDate) {
-            const date = new Date(inputDate);
-            const options = {  month: 'short', day: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' };
-            return date.toLocaleString('en-US', options)
-        }
-    </script>
+        doc.setFont(undefined,"normal");
+
+        doc.setFontSize(5.5);
+
+        const footerText =
+          "Corporate Off : 5th Level, Leela Business Park, Andheri Kurla Road, Andheri (E), Mumbai - 400 059, Board +91-022-40212121, Fax +91-022-40212390, Regd. Office : Sigapi Aachi Building, 7th Floor, 18/3, Rukmini Lakshmipathy Road, Egmore, Chennai - 600 008, Tamil Nadu, Tel +91-044-45936000.";
+
+        const footerLines =
+          doc.splitTextToSize(footerText,190);
+
+        doc.text(
+          footerLines,
+          10,
+          238
+        );
+
+      }
+
+      // ===== PAGE =====
+
+      drawHeader(1,1);
+
+      drawFooter();
+
+      // ===== SAVE =====
+
+      doc.save(`MTC_${mtcNumber}.pdf`);
+
+    }
+
+  </script>
+
 </body>
 </html>
