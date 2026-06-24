@@ -397,20 +397,56 @@ productInput.addEventListener("input", () => {
 /* ADD PRODUCT */
 function addProduct() {
   const name = productInput.value.trim();
-  if (!products[name]) return alert("Invalid product");
 
-  const [unit, defaultRate, gst] = products[name];
+  if (!name) {
+    alert("Enter product name");
+    return;
+  }
+
+  let unit, gst, defaultRate;
+
+  // Existing Product
+  if (products[name]) {
+    [unit, defaultRate, gst] = products[name];
+  } else {
+
+    // New Product Popup
+    unit = prompt(`"${name}" not found.\nEnter Unit (nos, kg, box, roll etc):`);
+
+    if (!unit) return;
+
+    gst = prompt(`Enter GST % for "${name}":`, "18");
+
+    if (gst === null || gst === "") return;
+
+    gst = parseFloat(gst);
+
+    defaultRate = parseFloat(rateInput.value) || 0;
+
+    // Save in Product Master
+    products[name] = [unit, defaultRate, gst];
+
+    // alert(`New product "${name}" added successfully.`);
+  }
+
   const rate = parseFloat(rateInput.value) || defaultRate;
+
   const total = rate + (rate * gst / 100);
 
   const row = document.createElement("tr");
+
   row.innerHTML = `
     <td>${name}</td>
     <td>${rate.toFixed(2)}</td>
     <td>${unit}</td>
     <td class="gst-col">${gst}%</td>
     <td class="gst-col">${total.toFixed(2)}</td>
-    <td><button class="btn-remove" onclick="this.closest('tr').remove()">❌</button></td>
+    <td>
+      <button class="btn-remove"
+              onclick="this.closest('tr').remove()">
+        ❌
+      </button>
+    </td>
   `;
 
   document.getElementById("tableBody").appendChild(row);
