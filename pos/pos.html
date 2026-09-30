@@ -192,7 +192,7 @@ document.getElementById("billNumberDisplay").textContent=`Bill Number: ${String(
 
 function getActualCostPrice(productDetails){
 const costPrice=parseFloat(productDetails[4])||0,gstPercentage=parseFloat(productDetails[3])||0;
-return document.getElementById("gstMode").checked?costPrice:costPrice+(costPrice*gstPercentage/100);
+return document.getElementById("gstMode").checked?costPrice:costPrice+(costPrice*gstPercentage/200);
 }
 
 function recalculateAllMargins(){
